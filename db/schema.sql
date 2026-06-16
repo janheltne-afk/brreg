@@ -43,6 +43,10 @@ CREATE TABLE IF NOT EXISTS sync_status (
     sist_kjoert  TIMESTAMPTZ
 );
 
+-- Legg til kolonner på en eventuell eksisterende enheter-tabell (eldre oppsett).
+ALTER TABLE enheter ADD COLUMN IF NOT EXISTS oppdateringsid BIGINT;
+ALTER TABLE enheter ADD COLUMN IF NOT EXISTS hentet_dato TIMESTAMPTZ DEFAULT now();
+
 -- Indeks som brukes for å finne neste delta-batch raskt.
 CREATE INDEX IF NOT EXISTS idx_enheter_oppdateringsid ON enheter (oppdateringsid);
 

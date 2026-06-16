@@ -99,6 +99,8 @@ CREATE TABLE IF NOT EXISTS sync_status (
     verdi        TEXT,
     sist_kjoert  TIMESTAMPTZ
 );
+ALTER TABLE enheter ADD COLUMN IF NOT EXISTS oppdateringsid BIGINT;
+ALTER TABLE enheter ADD COLUMN IF NOT EXISTS hentet_dato TIMESTAMPTZ DEFAULT now();
 CREATE INDEX IF NOT EXISTS idx_enheter_oppdateringsid ON enheter (oppdateringsid);
 INSERT INTO sync_status (nokkel, verdi, sist_kjoert)
 VALUES ('enheter_oppdateringsid', '0', NULL)
