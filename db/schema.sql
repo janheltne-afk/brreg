@@ -56,3 +56,42 @@ CREATE INDEX IF NOT EXISTS idx_enheter_oppdateringsid ON enheter (oppdateringsid
 INSERT INTO sync_status (nokkel, verdi, sist_kjoert)
 VALUES ('enheter_oppdateringsid', '0', NULL)
 ON CONFLICT (nokkel) DO NOTHING;
+
+-- ============================================================
+-- Regnskap (årsregnskap-nøkkeltall, hentet per organisasjonsnummer)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS regnskap (
+    id                              BIGINT PRIMARY KEY,
+    organisasjonsnummer             TEXT,
+    journalnr                       TEXT,
+    regnskapstype                   TEXT,
+    organisasjonsform               TEXT,
+    morselskap                      BOOLEAN,
+    regnskapsperiode_fra            DATE,
+    regnskapsperiode_til            DATE,
+    valuta                          TEXT,
+    avviklingsregnskap              BOOLEAN,
+    oppstillingsplan                TEXT,
+    revisjon_ikke_revidert          BOOLEAN,
+    revisjon_fravalg                BOOLEAN,
+    smaa_foretak                    BOOLEAN,
+    regnskapsregler                 TEXT,
+    sum_eiendeler                   NUMERIC,
+    sum_omloepsmidler               NUMERIC,
+    sum_anleggsmidler               NUMERIC,
+    sum_egenkapital_gjeld           NUMERIC,
+    sum_egenkapital                 NUMERIC,
+    sum_gjeld                       NUMERIC,
+    sum_kortsiktig_gjeld            NUMERIC,
+    sum_langsiktig_gjeld            NUMERIC,
+    sum_driftsinntekter             NUMERIC,
+    sum_driftskostnad               NUMERIC,
+    driftsresultat                  NUMERIC,
+    sum_finansinntekter             NUMERIC,
+    sum_finanskostnad               NUMERIC,
+    netto_finans                    NUMERIC,
+    ordinaert_resultat_foer_skatt   NUMERIC,
+    aarsresultat                    NUMERIC,
+    hentet_dato                     TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_regnskap_orgnr ON regnskap (organisasjonsnummer);

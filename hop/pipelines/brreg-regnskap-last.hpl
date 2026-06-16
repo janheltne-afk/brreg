@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pipeline>
+  <info>
+    <name>brreg-regnskap-last</name>
+    <name_sync_with_filename>Y</name_sync_with_filename>
+    <description>Henter årsregnskap per organisasjonsnummer (drevet fra enheter-tabellen). Org uten regnskap gir 404 og hoppes over. Hver org kan ha flere årsregnskap; alle upsertes til regnskap (nøkkel = regnskap-id).</description>
+    <extended_description/>
+    <pipeline_version/>
+    <pipeline_type>Normal</pipeline_type>
+    <parameters>
+      <parameter><name>REGN_API</name><default_value>https://data.brreg.no/regnskapsregisteret/regnskap</default_value><description/></parameter>
+    </parameters>
+    <capture_transform_performance>N</capture_transform_performance>
+    <transform_performance_capturing_delay>1000</transform_performance_capturing_delay>
+    <transform_performance_capturing_size_limit>100</transform_performance_capturing_size_limit>
+    <created_user>-</created_user>
+    <created_date>2026/06/16 00:00:00.000</created_date>
+    <modified_user>-</modified_user>
+    <modified_date>2026/06/16 00:00:00.000</modified_date>
+  </info>
+  <notepads>
+  </notepads>
+  <order>
+    <hop><from>Org-numre</from><to>Bygg URL</to><enabled>Y</enabled></hop>
+    <hop><from>Bygg URL</from><to>Hent regnskap</to><enabled>Y</enabled></hop>
+    <hop><from>Hent regnskap</from><to>Pakk inn</to><enabled>Y</enabled></hop>
+    <hop><from>Pakk inn</from><to>Parse regnskap</to><enabled>Y</enabled></hop>
+    <hop><from>Parse regnskap</from><to>Har regnskap</to><enabled>Y</enabled></hop>
+    <hop><from>Har regnskap</from><to>Upsert regnskap</to><enabled>Y</enabled></hop>
+    <hop><from>Har regnskap</from><to>Forkast</to><enabled>Y</enabled></hop>
+  </order>
+  <transform>
+    <name>Org-numre</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <connection>Brreg</connection>
+    <sql>SELECT organisasjonsnummer FROM enheter</sql>
+    <limit>0</limit>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <GUI><xloc>112</xloc><yloc>96</yloc></GUI>
+  </transform>
+  <transform>
+    <name>Bygg URL</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <optimizationLevel>9</optimizationLevel>
+    <jsScripts>
+      <jsScript>
+        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>var regn_url = getVariable("REGN_API","") + "/" + organisasjonsnummer;</jsScript_script>
+      </jsScript>
+    </jsScripts>
+    <fields>
+      <field>
+        <name>regn_url</name>
+        <rename>regn_url</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        <replace>N</replace>
+      </field>
+    </fields>
+    <attributes/>
+    <GUI><xloc>272</xloc><yloc>96</yloc></GUI>
+  </transform>
+  <transform>
+    <name>Hent regnskap</name>
+    <type>Rest</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>16</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <applicationType>JSON</applicationType>
+    <method>GET</method>
+    <url/>
+    <urlInField>Y</urlInField>
+    <dynamicMethod>N</dynamicMethod>
+    <methodFieldName/>
+    <urlField>regn_url</urlField>
+    <bodyField/>
+    <httpLogin/>
+    <httpPassword>Encrypted </httpPassword>
+    <proxyHost/>
+    <proxyPort/>
+    <preemptive>N</preemptive>
+    <trustStoreFile/>
+    <trustStorePassword>Encrypted </trustStorePassword>
+    <ignoreSsl>N</ignoreSsl>
+    <headers>
+</headers>
+    <parameters>
+</parameters>
+    <matrixParameters>
+</matrixParameters>
+    <result>
+      <name>result</name>
+      <code>status</code>
+      <response_time/>
+      <response_header/>
+    </result>
+    <attributes/>
+    <GUI><xloc>432</xloc><yloc>96</yloc></GUI>
+  </transform>
+  <transform>
+    <name>Pakk inn</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <optimizationLevel>9</optimizationLevel>
+    <jsScripts>
+      <jsScript>
+        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>var wrapped = "{\"r\":[]}"; if (result != null) { var s = String(result); if (s.length &gt; 0 &amp;&amp; s.charAt(0) === "[") { wrapped = "{\"r\":" + s + "}"; } }</jsScript_script>
+      </jsScript>
+    </jsScripts>
+    <fields>
+      <field>
+        <name>wrapped</name>
+        <rename>wrapped</rename>
+        <type>String</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        <replace>N</replace>
+      </field>
+    </fields>
+    <attributes/>
+    <GUI><xloc>512</xloc><yloc>96</yloc></GUI>
+  </transform>
+  <transform>
+    <name>Parse regnskap</name>
+    <type>JsonInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <include>N</include>
+    <include_field/>
+    <rownum>N</rownum>
+    <addresultfile>N</addresultfile>
+    <readurl>N</readurl>
+    <removeSourceField>Y</removeSourceField>
+    <IsIgnoreEmptyFile>N</IsIgnoreEmptyFile>
+    <doNotFailIfNoFile>Y</doNotFailIfNoFile>
+    <ignoreMissingPath>Y</ignoreMissingPath>
+    <defaultPathLeafToNull>Y</defaultPathLeafToNull>
+    <rownum_field/>
+    <file>
+      <name/>
+      <filemask/>
+      <exclude_filemask/>
+      <file_required>N</file_required>
+      <include_subfolders>N</include_subfolders>
+    </file>
+    <fields>
+      <field><name>id</name><path>$.r[*].id</path><type>Integer</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>organisasjonsnummer</name><path>$.r[*].virksomhet.organisasjonsnummer</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>journalnr</name><path>$.r[*].journalnr</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>regnskapstype</name><path>$.r[*].regnskapstype</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>organisasjonsform</name><path>$.r[*].virksomhet.organisasjonsform</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>morselskap</name><path>$.r[*].virksomhet.morselskap</path><type>Boolean</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>regnskapsperiode_fra</name><path>$.r[*].regnskapsperiode.fraDato</path><type>Date</type><format>yyyy-MM-dd</format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>regnskapsperiode_til</name><path>$.r[*].regnskapsperiode.tilDato</path><type>Date</type><format>yyyy-MM-dd</format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>valuta</name><path>$.r[*].valuta</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>avviklingsregnskap</name><path>$.r[*].avviklingsregnskap</path><type>Boolean</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>oppstillingsplan</name><path>$.r[*].oppstillingsplan</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>revisjon_ikke_revidert</name><path>$.r[*].revisjon.ikkeRevidertAarsregnskap</path><type>Boolean</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>revisjon_fravalg</name><path>$.r[*].revisjon.fravalgRevisjon</path><type>Boolean</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>smaa_foretak</name><path>$.r[*].regnkapsprinsipper.smaaForetak</path><type>Boolean</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>regnskapsregler</name><path>$.r[*].regnkapsprinsipper.regnskapsregler</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>sum_eiendeler</name><path>$.r[*].eiendeler.sumEiendeler</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>sum_omloepsmidler</name><path>$.r[*].eiendeler.omloepsmidler.sumOmloepsmidler</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>sum_anleggsmidler</name><path>$.r[*].eiendeler.anleggsmidler.sumAnleggsmidler</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>sum_egenkapital_gjeld</name><path>$.r[*].egenkapitalGjeld.sumEgenkapitalGjeld</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>sum_egenkapital</name><path>$.r[*].egenkapitalGjeld.egenkapital.sumEgenkapital</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>sum_gjeld</name><path>$.r[*].egenkapitalGjeld.gjeldOversikt.sumGjeld</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>sum_kortsiktig_gjeld</name><path>$.r[*].egenkapitalGjeld.gjeldOversikt.kortsiktigGjeld.sumKortsiktigGjeld</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>sum_langsiktig_gjeld</name><path>$.r[*].egenkapitalGjeld.gjeldOversikt.langsiktigGjeld.sumLangsiktigGjeld</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>sum_driftsinntekter</name><path>$.r[*].resultatregnskapResultat.driftsresultat.driftsinntekter.sumDriftsinntekter</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>sum_driftskostnad</name><path>$.r[*].resultatregnskapResultat.driftsresultat.driftskostnad.sumDriftskostnad</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>driftsresultat</name><path>$.r[*].resultatregnskapResultat.driftsresultat.driftsresultat</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>sum_finansinntekter</name><path>$.r[*].resultatregnskapResultat.finansresultat.finansinntekt.sumFinansinntekter</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>sum_finanskostnad</name><path>$.r[*].resultatregnskapResultat.finansresultat.finanskostnad.sumFinanskostnad</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>netto_finans</name><path>$.r[*].resultatregnskapResultat.finansresultat.nettoFinans</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>ordinaert_resultat_foer_skatt</name><path>$.r[*].resultatregnskapResultat.ordinaertResultatFoerSkattekostnad</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>aarsresultat</name><path>$.r[*].resultatregnskapResultat.aarsresultat</path><type>BigNumber</type><format/><currency/><decimal>.</decimal><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+    </fields>
+    <limit>0</limit>
+    <IsInFields>Y</IsInFields>
+    <IsAFile>N</IsAFile>
+    <valueField>wrapped</valueField>
+    <shortFileFieldName/>
+    <pathFieldName/>
+    <hiddenFieldName/>
+    <lastModificationTimeFieldName/>
+    <uriNameFieldName/>
+    <rootUriNameFieldName/>
+    <extensionFieldName/>
+    <sizeFieldName/>
+    <attributes/>
+    <GUI><xloc>592</xloc><yloc>96</yloc></GUI>
+  </transform>
+  <transform>
+    <name>Har regnskap</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <compare>
+      <condition>
+        <conditions>
+</conditions>
+        <function>IS NOT NULL</function>
+        <leftvalue>id</leftvalue>
+        <negated>N</negated>
+        <operator>-</operator>
+      </condition>
+    </compare>
+    <send_false_to>Forkast</send_false_to>
+    <send_true_to>Upsert regnskap</send_true_to>
+    <attributes/>
+    <GUI><xloc>752</xloc><yloc>96</yloc></GUI>
+  </transform>
+  <transform>
+    <name>Forkast</name>
+    <type>Dummy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <attributes/>
+    <GUI><xloc>752</xloc><yloc>240</yloc></GUI>
+  </transform>
+  <transform>
+    <name>Upsert regnskap</name>
+    <type>InsertUpdate</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <connection>Brreg</connection>
+    <commit>500</commit>
+    <update_bypassed>N</update_bypassed>
+    <lookup>
+      <schema/>
+      <table>regnskap</table>
+      <key>
+        <name>id</name>
+        <field>id</field>
+        <condition>=</condition>
+        <name2/>
+      </key>
+      <value><name>id</name><rename>id</rename><update>N</update></value>
+      <value><name>organisasjonsnummer</name><rename>organisasjonsnummer</rename><update>Y</update></value>
+      <value><name>journalnr</name><rename>journalnr</rename><update>Y</update></value>
+      <value><name>regnskapstype</name><rename>regnskapstype</rename><update>Y</update></value>
+      <value><name>organisasjonsform</name><rename>organisasjonsform</rename><update>Y</update></value>
+      <value><name>morselskap</name><rename>morselskap</rename><update>Y</update></value>
+      <value><name>regnskapsperiode_fra</name><rename>regnskapsperiode_fra</rename><update>Y</update></value>
+      <value><name>regnskapsperiode_til</name><rename>regnskapsperiode_til</rename><update>Y</update></value>
+      <value><name>valuta</name><rename>valuta</rename><update>Y</update></value>
+      <value><name>avviklingsregnskap</name><rename>avviklingsregnskap</rename><update>Y</update></value>
+      <value><name>oppstillingsplan</name><rename>oppstillingsplan</rename><update>Y</update></value>
+      <value><name>revisjon_ikke_revidert</name><rename>revisjon_ikke_revidert</rename><update>Y</update></value>
+      <value><name>revisjon_fravalg</name><rename>revisjon_fravalg</rename><update>Y</update></value>
+      <value><name>smaa_foretak</name><rename>smaa_foretak</rename><update>Y</update></value>
+      <value><name>regnskapsregler</name><rename>regnskapsregler</rename><update>Y</update></value>
+      <value><name>sum_eiendeler</name><rename>sum_eiendeler</rename><update>Y</update></value>
+      <value><name>sum_omloepsmidler</name><rename>sum_omloepsmidler</rename><update>Y</update></value>
+      <value><name>sum_anleggsmidler</name><rename>sum_anleggsmidler</rename><update>Y</update></value>
+      <value><name>sum_egenkapital_gjeld</name><rename>sum_egenkapital_gjeld</rename><update>Y</update></value>
+      <value><name>sum_egenkapital</name><rename>sum_egenkapital</rename><update>Y</update></value>
+      <value><name>sum_gjeld</name><rename>sum_gjeld</rename><update>Y</update></value>
+      <value><name>sum_kortsiktig_gjeld</name><rename>sum_kortsiktig_gjeld</rename><update>Y</update></value>
+      <value><name>sum_langsiktig_gjeld</name><rename>sum_langsiktig_gjeld</rename><update>Y</update></value>
+      <value><name>sum_driftsinntekter</name><rename>sum_driftsinntekter</rename><update>Y</update></value>
+      <value><name>sum_driftskostnad</name><rename>sum_driftskostnad</rename><update>Y</update></value>
+      <value><name>driftsresultat</name><rename>driftsresultat</rename><update>Y</update></value>
+      <value><name>sum_finansinntekter</name><rename>sum_finansinntekter</rename><update>Y</update></value>
+      <value><name>sum_finanskostnad</name><rename>sum_finanskostnad</rename><update>Y</update></value>
+      <value><name>netto_finans</name><rename>netto_finans</rename><update>Y</update></value>
+      <value><name>ordinaert_resultat_foer_skatt</name><rename>ordinaert_resultat_foer_skatt</rename><update>Y</update></value>
+      <value><name>aarsresultat</name><rename>aarsresultat</rename><update>Y</update></value>
+    </lookup>
+    <attributes/>
+    <GUI><xloc>912</xloc><yloc>96</yloc></GUI>
+  </transform>
+  <attributes/>
+</pipeline>

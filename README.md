@@ -53,7 +53,25 @@ hop/pipelines/brreg-delta-batch.hpl        Henter én batch og gjør upsert
 hop/pipelines/brreg-bulk-last.hpl          Strømmer NDJSON → bulk-insert (seeding)
 tools/seed-prep.py                         Last ned + konverter + finn watermark
 tools/json_array_to_ndjson.py              Strøm-konverter JSON-array → NDJSON
+hop/workflows/brreg-regnskap.hwf           Henter årsregnskap (nøkkeltall) per org
+hop/pipelines/brreg-regnskap-last.hpl      Per-org regnskap-oppslag → upsert
 ```
+
+## Regnskap (årsregnskap-nøkkeltall)
+
+`brreg-regnskap.hwf` henter årsregnskap for organisasjonene i `enheter`-tabellen
+og upserter nøkkeltall (balanse + resultat) til tabellen `regnskap`.
+
+- Regnskapsregisteret har **ingen bulk/delta**, så det hentes **ett oppslag per
+  organisasjonsnummer** (`/regnskapsregisteret/regnskap/{orgnr}`), 16× parallelt.
+- Org uten regnskap gir 404 og hoppes over; org med kan ha flere årsregnskap
+  (ett per år) — alle lagres (nøkkel = regnskap-`id`).
+- **NB:** å kjøre for alle ~1,16 mill. enheter tar flere timer (de fleste gir 404).
+  Vil du begrense, rediger SQL-en i transformen *Org-numre* i
+  `brreg-regnskap-last.hpl`, f.eks. `... WHERE organisasjonsform_kode IN ('AS','ASA')`.
+- Kjør på nytt når du vil oppdatere (upsert på `id`). Tabellen `regnskap` har én
+  rad per årsregnskap med bl.a. `sum_eiendeler`, `sum_driftsinntekter`,
+  `driftsresultat`, `aarsresultat`, `sum_egenkapital`, `sum_gjeld`.
 
 ## Oppsett
 
