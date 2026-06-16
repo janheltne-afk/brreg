@@ -12,26 +12,40 @@ Krever kun Python 3 (standardbibliotek). Bruk:
 
 Skriv ut watermark-verdien til slutt; bruk den som SEED_WATERMARK i seed-workflowen.
 """
-import sys, gzip, io, json, urllib.request
+import sys, os, gzip, io, json, time, urllib.request, urllib.error
 
 LASTNED = "https://data.brreg.no/enhetsregisteret/api/enheter/lastned"
 OPPD = "https://data.brreg.no/enhetsregisteret/api/oppdateringer/enheter"
 GZ = "enheter_alle.json.gz"
 
 
-def last_ned(url, dest):
-    print(f"Laster ned {url} ...")
-    req = urllib.request.Request(url, headers={"Accept": "application/gzip"})
-    with urllib.request.urlopen(req, timeout=600) as r, open(dest, "wb") as f:
-        total = 0
-        while True:
-            chunk = r.read(1 << 20)
-            if not chunk:
-                break
-            f.write(chunk)
-            total += len(chunk)
-            print(f"\r  {total/1e6:.0f} MB", end="", flush=True)
-    print(f"\n  Ferdig: {total/1e6:.1f} MB -> {dest}")
+def last_ned(url, dest, forsok=6):
+    """Last ned med retry. brreg sin gateway kan svare 502/503/504 ved treg
+    generering – da venter vi og prøver igjen. Hopper over hvis fila finnes."""
+    if os.path.exists(dest) and os.path.getsize(dest) > 1_000_000:
+        print(f"Bruker eksisterende fil: {dest} ({os.path.getsize(dest)/1e6:.0f} MB)")
+        return
+    for n in range(1, forsok + 1):
+        try:
+            print(f"Laster ned (forsøk {n}/{forsok}) {url} ...")
+            req = urllib.request.Request(url, headers={"Accept": "application/gzip", "User-Agent": "brreg-hop-seed"})
+            with urllib.request.urlopen(req, timeout=1800) as r, open(dest, "wb") as f:
+                total = 0
+                while True:
+                    chunk = r.read(1 << 20)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+                    total += len(chunk)
+                    print(f"\r  {total/1e6:.0f} MB", end="", flush=True)
+            print(f"\n  Ferdig: {total/1e6:.1f} MB -> {dest}")
+            return
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ConnectionError) as e:
+            vent = min(60, 5 * 2 ** (n - 1))
+            print(f"\n  Feil ({e}). Venter {vent}s og prøver igjen ...")
+            time.sleep(vent)
+    raise SystemExit("Nedlasting feilet etter flere forsøk. Prøv igjen senere, "
+                     "eller last ned fila manuelt (se README) og kjør på nytt.")
 
 
 def konverter(gz, ndjson, chunk=1 << 20):
