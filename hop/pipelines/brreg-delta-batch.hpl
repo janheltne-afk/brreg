@@ -322,7 +322,6 @@
       <field><name>overordnet_enhet</name><path>$.overordnetEnhet</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
       <field><name>institusjonell_sektor_kode</name><path>$.institusjonellSektorkode.kode</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
       <field><name>institusjonell_sektor_beskrivelse</name><path>$.institusjonellSektorkode.beskrivelse</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
-      <field><name>sist_oppdatert</name><path>$.sistOppdatert</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
       <field><name>slettedato</name><path>$.slettedato</path><type>Date</type><format>yyyy-MM-dd</format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
     </fields>
     <limit>0</limit>
@@ -432,7 +431,6 @@
       <value><name>overordnet_enhet</name><rename>overordnet_enhet</rename><update>Y</update></value>
       <value><name>institusjonell_sektor_kode</name><rename>institusjonell_sektor_kode</rename><update>Y</update></value>
       <value><name>institusjonell_sektor_beskrivelse</name><rename>institusjonell_sektor_beskrivelse</rename><update>Y</update></value>
-      <value><name>sist_oppdatert</name><rename>sist_oppdatert</rename><update>Y</update></value>
       <value><name>slettedato</name><rename>slettedato</rename><update>Y</update></value>
       <value><name>oppdateringsid</name><rename>oppdid_max</rename><update>Y</update></value>
     </lookup>
