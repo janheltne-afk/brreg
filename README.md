@@ -72,6 +72,9 @@ og upserter nøkkeltall (balanse + resultat) til tabellen `regnskap`.
 - Kjør på nytt når du vil oppdatere (upsert på `id`). Tabellen `regnskap` har én
   rad per årsregnskap med bl.a. `sum_eiendeler`, `sum_driftsinntekter`,
   `driftsresultat`, `aarsresultat`, `sum_egenkapital`, `sum_gjeld`.
+- **Robust mot nettverksfeil:** kjører 5 oppslag parallelt, og enkeltkall som
+  feiler (timeout o.l.) rutes vekk uten å stoppe jobben. Org som ble hoppet over
+  pga. forbigående feil fylles inn ved å kjøre workflowen på nytt (idempotent).
 
 ## Oppsett
 
