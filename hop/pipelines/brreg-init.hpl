@@ -3,7 +3,7 @@
   <info>
     <name>brreg-init</name>
     <name_sync_with_filename>Y</name_sync_with_filename>
-    <description>Leser siste lastede oppdateringsid fra sync_status og legger den i variabelen LAST_OPPDATERINGSID.</description>
+    <description>Leser watermark (siste behandlede oppdateringsid) fra sync_status og setter variabelen CURSOR = watermark + 1, dvs. neste oppdateringsid som skal hentes.</description>
     <extended_description/>
     <pipeline_version/>
     <pipeline_type>Normal</pipeline_type>
@@ -20,17 +20,17 @@
   </notepads>
   <order>
     <hop>
-      <from>Les siste oppdateringsid</from>
-      <to>Sett LAST_OPPDATERINGSID</to>
+      <from>Les watermark</from>
+      <to>Sett CURSOR</to>
       <enabled>Y</enabled>
     </hop>
   </order>
   <transform>
-    <name>Les siste oppdateringsid</name>
+    <name>Les watermark</name>
     <type>TableInput</type>
     <description/>
     <connection>Brreg</connection>
-    <sql>SELECT COALESCE(verdi,'0') AS verdi FROM sync_status WHERE nokkel='enheter_oppdateringsid'</sql>
+    <sql>SELECT (COALESCE(verdi,'0')::bigint + 1)::text AS cursor FROM sync_status WHERE nokkel='enheter_oppdateringsid'</sql>
     <limit>0</limit>
     <execute_each_row>N</execute_each_row>
     <variables_active>N</variables_active>
@@ -42,15 +42,15 @@
     </GUI>
   </transform>
   <transform>
-    <name>Sett LAST_OPPDATERINGSID</name>
+    <name>Sett CURSOR</name>
     <type>SetVariable</type>
     <description/>
     <fields>
       <field>
-        <variable_name>LAST_OPPDATERINGSID</variable_name>
-        <field_name>verdi</field_name>
+        <variable_name>CURSOR</variable_name>
+        <field_name>cursor</field_name>
         <variable_type>ROOT_WORKFLOW</variable_type>
-        <default_value>0</default_value>
+        <default_value>1</default_value>
       </field>
     </fields>
     <use_formatting>N</use_formatting>

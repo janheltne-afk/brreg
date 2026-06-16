@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS enheter (
     institusjonell_sektor_kode       TEXT,
     institusjonell_sektor_beskrivelse TEXT,
     sist_oppdatert                   TEXT,
+    slettedato                       DATE,
     oppdateringsid                   BIGINT,
     hentet_dato                      TIMESTAMPTZ DEFAULT now()
 );
@@ -44,6 +45,7 @@ CREATE TABLE IF NOT EXISTS sync_status (
 );
 
 -- Legg til kolonner på en eventuell eksisterende enheter-tabell (eldre oppsett).
+ALTER TABLE enheter ADD COLUMN IF NOT EXISTS slettedato DATE;
 ALTER TABLE enheter ADD COLUMN IF NOT EXISTS oppdateringsid BIGINT;
 ALTER TABLE enheter ADD COLUMN IF NOT EXISTS hentet_dato TIMESTAMPTZ DEFAULT now();
 
