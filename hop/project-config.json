@@ -1,0 +1,42 @@
+{
+  "description": "Apache Hop-prosjekt for synkronisering av brreg-enhetsregisteret til PostgreSQL.",
+  "company": "",
+  "department": "",
+  "metadataBaseFolder": "${PROJECT_HOME}/metadata",
+  "unitTestsBasePath": "${PROJECT_HOME}",
+  "dataSetsCsvFolder": "${PROJECT_HOME}/datasets",
+  "enforceExecutionInHome": true,
+  "configFileNamePattern": "${PROJECT_HOME}/conf/project-environment-config.json",
+  "variables": [
+    {
+      "name": "BRREG_API",
+      "value": "https://data.brreg.no/enhetsregisteret/api/enheter",
+      "description": "Basis-URL for enhetsregisteret"
+    },
+    {
+      "name": "PAGE_SIZE",
+      "value": "500",
+      "description": "Antall enheter per side fra API-et"
+    },
+    {
+      "name": "BRREG_DB_HOST",
+      "value": "localhost",
+      "description": "PostgreSQL host"
+    },
+    {
+      "name": "BRREG_DB_PORT",
+      "value": "5432",
+      "description": "PostgreSQL port"
+    },
+    {
+      "name": "BRREG_DB_NAME",
+      "value": "brreg",
+      "description": "PostgreSQL database"
+    },
+    {
+      "name": "BRREG_DB_USER",
+      "value": "hop",
+      "description": "PostgreSQL bruker"
+    }
+  ]
+}

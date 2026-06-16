@@ -1,0 +1,21 @@
+{
+  "name": "Brreg",
+  "rdbms": {
+    "pluginId": "POSTGRESQL",
+    "accessType": 0,
+    "hostname": "${BRREG_DB_HOST}",
+    "port": "${BRREG_DB_PORT}",
+    "databaseName": "${BRREG_DB_NAME}",
+    "username": "${BRREG_DB_USER}",
+    "password": "${BRREG_DB_PASSWORD}",
+    "servername": null,
+    "dataTablespace": null,
+    "indexTablespace": null,
+    "attributes": {
+      "SUPPORTS_BOOLEAN_DATA_TYPE": "Y",
+      "SUPPORTS_TIMESTAMP_DATA_TYPE": "Y",
+      "QUOTE_ALL_FIELDS": "N",
+      "PORT_NUMBER": "${BRREG_DB_PORT}"
+    }
+  }
+}

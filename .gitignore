@@ -1,0 +1,8 @@
+# Hop lokale/genererte filer
+hop/conf/
+*.log
+audit/
+
+# Hemmeligheter
+.env
+*.secret
