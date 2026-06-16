@@ -182,10 +182,10 @@
     <partitioning_monthly>Y</partitioning_monthly>
     <return_keys>N</return_keys>
     <specify_fields>N</specify_fields>
-    <table>enheter</table>
+    <table>enheter_stg</table>
     <tablename_in_field>N</tablename_in_field>
     <tablename_in_table>Y</tablename_in_table>
-    <truncate>N</truncate>
+    <truncate>Y</truncate>
     <use_batch>Y</use_batch>
     <attributes/>
     <GUI><xloc>720</xloc><yloc>96</yloc></GUI>

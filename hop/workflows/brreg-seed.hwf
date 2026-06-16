@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS sync_status (
 ALTER TABLE enheter ADD COLUMN IF NOT EXISTS slettedato DATE;
 ALTER TABLE enheter ADD COLUMN IF NOT EXISTS oppdateringsid BIGINT;
 ALTER TABLE enheter ADD COLUMN IF NOT EXISTS hentet_dato TIMESTAMPTZ DEFAULT now();
+CREATE TABLE IF NOT EXISTS enheter_stg (LIKE enheter);
 INSERT INTO sync_status (nokkel, verdi, sist_kjoert)
 VALUES ('enheter_oppdateringsid', '0', NULL)
 ON CONFLICT (nokkel) DO NOTHING;</sql>
@@ -107,10 +108,15 @@ ON CONFLICT (nokkel) DO NOTHING;</sql>
       <attributes_hac/>
     </action>
     <action>
-      <name>Tom enheter</name>
-      <description>Tømmer tabellen før full last.</description>
+      <name>Upsert til enheter</name>
+      <description>Set-basert upsert fra staging til enheter (insert nye + oppdater eksisterende). Rører ikke underenheter/FK.</description>
       <type>SQL</type>
-      <sql>TRUNCATE TABLE enheter;</sql>
+      <sql>INSERT INTO enheter (organisasjonsnummer, navn, organisasjonsform_kode, organisasjonsform_beskrivelse, naeringskode1, naeringskode1_beskrivelse, naeringskode2, naeringskode2_beskrivelse, antall_ansatte, stiftelsesdato, registreringsdato, hjemmeside, epostadresse, forr_adresse, forr_postnummer, forr_poststed, forr_kommune, forr_kommunenummer, forr_land, post_adresse, post_postnummer, post_poststed, registrert_mva, registrert_foretaksreg, konkurs, under_avvikling, overordnet_enhet, institusjonell_sektor_kode, institusjonell_sektor_beskrivelse, hentet_dato)
+SELECT DISTINCT ON (organisasjonsnummer) organisasjonsnummer, navn, organisasjonsform_kode, organisasjonsform_beskrivelse, naeringskode1, naeringskode1_beskrivelse, naeringskode2, naeringskode2_beskrivelse, antall_ansatte, stiftelsesdato, registreringsdato, hjemmeside, epostadresse, forr_adresse, forr_postnummer, forr_poststed, forr_kommune, forr_kommunenummer, forr_land, post_adresse, post_postnummer, post_poststed, registrert_mva, registrert_foretaksreg, konkurs, under_avvikling, overordnet_enhet, institusjonell_sektor_kode, institusjonell_sektor_beskrivelse, now()
+  FROM enheter_stg
+ ORDER BY organisasjonsnummer
+ON CONFLICT (organisasjonsnummer) DO UPDATE SET navn=EXCLUDED.navn, organisasjonsform_kode=EXCLUDED.organisasjonsform_kode, organisasjonsform_beskrivelse=EXCLUDED.organisasjonsform_beskrivelse, naeringskode1=EXCLUDED.naeringskode1, naeringskode1_beskrivelse=EXCLUDED.naeringskode1_beskrivelse, naeringskode2=EXCLUDED.naeringskode2, naeringskode2_beskrivelse=EXCLUDED.naeringskode2_beskrivelse, antall_ansatte=EXCLUDED.antall_ansatte, stiftelsesdato=EXCLUDED.stiftelsesdato, registreringsdato=EXCLUDED.registreringsdato, hjemmeside=EXCLUDED.hjemmeside, epostadresse=EXCLUDED.epostadresse, forr_adresse=EXCLUDED.forr_adresse, forr_postnummer=EXCLUDED.forr_postnummer, forr_poststed=EXCLUDED.forr_poststed, forr_kommune=EXCLUDED.forr_kommune, forr_kommunenummer=EXCLUDED.forr_kommunenummer, forr_land=EXCLUDED.forr_land, post_adresse=EXCLUDED.post_adresse, post_postnummer=EXCLUDED.post_postnummer, post_poststed=EXCLUDED.post_poststed, registrert_mva=EXCLUDED.registrert_mva, registrert_foretaksreg=EXCLUDED.registrert_foretaksreg, konkurs=EXCLUDED.konkurs, under_avvikling=EXCLUDED.under_avvikling, overordnet_enhet=EXCLUDED.overordnet_enhet, institusjonell_sektor_kode=EXCLUDED.institusjonell_sektor_kode, institusjonell_sektor_beskrivelse=EXCLUDED.institusjonell_sektor_beskrivelse, hentet_dato=now();
+TRUNCATE TABLE enheter_stg;</sql>
       <useVariableSubstitution>N</useVariableSubstitution>
       <sqlfromfile>N</sqlfromfile>
       <sqlfilename/>
@@ -119,7 +125,7 @@ ON CONFLICT (nokkel) DO NOTHING;</sql>
       <connection>Brreg</connection>
       <attributes/>
       <parallel>N</parallel>
-      <xloc>560</xloc>
+      <xloc>740</xloc>
       <yloc>80</yloc>
       <attributes_hac/>
     </action>
@@ -176,9 +182,9 @@ ON CONFLICT (nokkel) DO NOTHING;</sql>
   <hops>
     <hop><from>Start</from><to>Sjekk DB-tilkobling</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>Y</unconditional></hop>
     <hop><from>Sjekk DB-tilkobling</from><to>Opprett tabeller</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>N</unconditional></hop>
-    <hop><from>Opprett tabeller</from><to>Tom enheter</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>N</unconditional></hop>
-    <hop><from>Tom enheter</from><to>Bulk last</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>N</unconditional></hop>
-    <hop><from>Bulk last</from><to>Sett watermark</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>N</unconditional></hop>
+    <hop><from>Opprett tabeller</from><to>Bulk last</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>N</unconditional></hop>
+    <hop><from>Bulk last</from><to>Upsert til enheter</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>N</unconditional></hop>
+    <hop><from>Upsert til enheter</from><to>Sett watermark</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>N</unconditional></hop>
   </hops>
   <notepads/>
   <attributes/>
