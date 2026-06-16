@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workflow>
+  <name>brreg-seed</name>
+  <name_sync_with_filename>Y</name_sync_with_filename>
+  <description>Engangs full førstegangslast av hele enhetsregisteret. Tømmer enheter, bulk-laster fra NDJSON-fila (laget av tools/seed-prep.py), og setter watermark. Etterpå holder brreg-enheter-sync alt løpende oppdatert.</description>
+  <created_user>-</created_user>
+  <modified_user>-</modified_user>
+  <created_date>2026/06/16 00:00:00.000</created_date>
+  <modified_date>2026/06/16 00:00:00.000</modified_date>
+  <parameters>
+    <parameter><name>SEED_FILE</name><default_value>${PROJECT_HOME}/seed/enheter.ndjson</default_value><description>Sti til NDJSON-fila</description></parameter>
+    <parameter><name>SEED_WATERMARK</name><default_value>0</default_value><description>oppdateringsid å sette etter seeding (fra seed-prep.py)</description></parameter>
+  </parameters>
+  <actions>
+    <action>
+      <name>Start</name>
+      <description/>
+      <type>SPECIAL</type>
+      <repeat>N</repeat>
+      <schedulerType>0</schedulerType>
+      <intervalSeconds>0</intervalSeconds>
+      <intervalMinutes>60</intervalMinutes>
+      <DayOfMonth>1</DayOfMonth>
+      <weekDay>1</weekDay>
+      <minutes>0</minutes>
+      <hour>12</hour>
+      <doNotWaitOnFirstExecution>N</doNotWaitOnFirstExecution>
+      <attributes/>
+      <parallel>N</parallel>
+      <xloc>80</xloc>
+      <yloc>80</yloc>
+      <attributes_hac/>
+    </action>
+    <action>
+      <name>Sjekk DB-tilkobling</name>
+      <description/>
+      <type>CHECK_DB_CONNECTIONS</type>
+      <connections>
+        <connection><name>Brreg</name><waitfor/><waittime>millisecond</waittime></connection>
+      </connections>
+      <attributes/>
+      <parallel>N</parallel>
+      <xloc>240</xloc>
+      <yloc>80</yloc>
+      <attributes_hac/>
+    </action>
+    <action>
+      <name>Opprett tabeller</name>
+      <description/>
+      <type>SQL</type>
+      <sql>CREATE TABLE IF NOT EXISTS enheter (
+    organisasjonsnummer              TEXT PRIMARY KEY,
+    navn                             TEXT,
+    organisasjonsform_kode           TEXT,
+    organisasjonsform_beskrivelse    TEXT,
+    naeringskode1                    TEXT,
+    naeringskode1_beskrivelse        TEXT,
+    naeringskode2                    TEXT,
+    naeringskode2_beskrivelse        TEXT,
+    antall_ansatte                   INTEGER,
+    stiftelsesdato                   DATE,
+    registreringsdato                DATE,
+    hjemmeside                       TEXT,
+    epostadresse                     TEXT,
+    forr_adresse                     TEXT,
+    forr_postnummer                  TEXT,
+    forr_poststed                    TEXT,
+    forr_kommune                     TEXT,
+    forr_kommunenummer               TEXT,
+    forr_land                        TEXT,
+    post_adresse                     TEXT,
+    post_postnummer                  TEXT,
+    post_poststed                    TEXT,
+    registrert_mva                   BOOLEAN,
+    registrert_foretaksreg           BOOLEAN,
+    konkurs                          BOOLEAN,
+    under_avvikling                  BOOLEAN,
+    overordnet_enhet                 TEXT,
+    institusjonell_sektor_kode       TEXT,
+    institusjonell_sektor_beskrivelse TEXT,
+    sist_oppdatert                   TEXT,
+    slettedato                       DATE,
+    oppdateringsid                   BIGINT,
+    hentet_dato                      TIMESTAMPTZ DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS sync_status (
+    nokkel       TEXT PRIMARY KEY,
+    verdi        TEXT,
+    sist_kjoert  TIMESTAMPTZ
+);
+ALTER TABLE enheter ADD COLUMN IF NOT EXISTS slettedato DATE;
+ALTER TABLE enheter ADD COLUMN IF NOT EXISTS oppdateringsid BIGINT;
+ALTER TABLE enheter ADD COLUMN IF NOT EXISTS hentet_dato TIMESTAMPTZ DEFAULT now();
+INSERT INTO sync_status (nokkel, verdi, sist_kjoert)
+VALUES ('enheter_oppdateringsid', '0', NULL)
+ON CONFLICT (nokkel) DO NOTHING;</sql>
+      <useVariableSubstitution>N</useVariableSubstitution>
+      <sqlfromfile>N</sqlfromfile>
+      <sqlfilename/>
+      <sqlfilename_encoding/>
+      <sendOneStatement>N</sendOneStatement>
+      <connection>Brreg</connection>
+      <attributes/>
+      <parallel>N</parallel>
+      <xloc>400</xloc>
+      <yloc>80</yloc>
+      <attributes_hac/>
+    </action>
+    <action>
+      <name>Tom enheter</name>
+      <description>Tømmer tabellen før full last.</description>
+      <type>SQL</type>
+      <sql>TRUNCATE TABLE enheter;</sql>
+      <useVariableSubstitution>N</useVariableSubstitution>
+      <sqlfromfile>N</sqlfromfile>
+      <sqlfilename/>
+      <sqlfilename_encoding/>
+      <sendOneStatement>N</sendOneStatement>
+      <connection>Brreg</connection>
+      <attributes/>
+      <parallel>N</parallel>
+      <xloc>560</xloc>
+      <yloc>80</yloc>
+      <attributes_hac/>
+    </action>
+    <action>
+      <name>Bulk last</name>
+      <description>Strømmer NDJSON-fila inn i enheter.</description>
+      <type>PIPELINE</type>
+      <filename>${PROJECT_HOME}/pipelines/brreg-bulk-last.hpl</filename>
+      <params_from_previous>N</params_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>N</clear_rows>
+      <clear_files>N</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Basic</loglevel>
+      <set_append_logfile>N</set_append_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <follow_abort_remote>N</follow_abort_remote>
+      <create_parent_folder>N</create_parent_folder>
+      <run_configuration>local</run_configuration>
+      <parameters>
+        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>
+      <attributes/>
+      <parallel>N</parallel>
+      <xloc>720</xloc>
+      <yloc>80</yloc>
+      <attributes_hac/>
+    </action>
+    <action>
+      <name>Sett watermark</name>
+      <description>Setter watermark til verdien fra seed-prep.py.</description>
+      <type>SQL</type>
+      <sql>UPDATE sync_status
+   SET verdi = '${SEED_WATERMARK}',
+       sist_kjoert = now()
+ WHERE nokkel = 'enheter_oppdateringsid';</sql>
+      <useVariableSubstitution>Y</useVariableSubstitution>
+      <sqlfromfile>N</sqlfromfile>
+      <sqlfilename/>
+      <sqlfilename_encoding/>
+      <sendOneStatement>N</sendOneStatement>
+      <connection>Brreg</connection>
+      <attributes/>
+      <parallel>N</parallel>
+      <xloc>880</xloc>
+      <yloc>80</yloc>
+      <attributes_hac/>
+    </action>
+  </actions>
+  <hops>
+    <hop><from>Start</from><to>Sjekk DB-tilkobling</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>Y</unconditional></hop>
+    <hop><from>Sjekk DB-tilkobling</from><to>Opprett tabeller</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>N</unconditional></hop>
+    <hop><from>Opprett tabeller</from><to>Tom enheter</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>N</unconditional></hop>
+    <hop><from>Tom enheter</from><to>Bulk last</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>N</unconditional></hop>
+    <hop><from>Bulk last</from><to>Sett watermark</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>N</unconditional></hop>
+  </hops>
+  <notepads/>
+  <attributes/>
+</workflow>

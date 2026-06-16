@@ -6,3 +6,10 @@ audit/
 # Hemmeligheter
 .env
 *.secret
+
+# Seed-data (store filer – lastes ned/generes lokalt)
+hop/seed/*.ndjson
+hop/seed/*.json
+hop/seed/*.gz
+*.json.gz
+enheter_alle.json.gz

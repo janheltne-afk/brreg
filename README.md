@@ -46,9 +46,13 @@ hop/project-config.json                    Hop-prosjektkonfig (API-URL-er, batch
 hop/metadata/rdbms/Brreg.json              Databasetilkobling (PostgreSQL)
 hop/metadata/pipeline-run-configuration/local.json
 hop/metadata/workflow-run-configuration/local.json
-hop/workflows/brreg-enheter-sync.hwf       Hovedworkflow
+hop/workflows/brreg-enheter-sync.hwf       Hovedworkflow (inkrementell delta)
+hop/workflows/brreg-seed.hwf               Engangs full førstegangslast
 hop/pipelines/brreg-init.hpl               Leser watermark → CURSOR
 hop/pipelines/brreg-delta-batch.hpl        Henter én batch og gjør upsert
+hop/pipelines/brreg-bulk-last.hpl          Strømmer NDJSON → bulk-insert (seeding)
+tools/seed-prep.py                         Last ned + konverter + finn watermark
+tools/json_array_to_ndjson.py              Strøm-konverter JSON-array → NDJSON
 ```
 
 ## Oppsett
@@ -72,28 +76,43 @@ hop-run.sh --project=brreg --runconfig=local \
   --file='${PROJECT_HOME}/workflows/brreg-enheter-sync.hwf'
 ```
 
-## ⚠️ Førstegangslast (seeding)
+## Førstegangslast (seeding) av hele registeret
 
-`sync_status` starter med watermark `0`. Kjører du da inkrementelt, vil den
-forsøke å spille av *alle* historiske endringer (~24 mill. hendelser) med ett
-API-oppslag per enhet — det er ikke praktisk for en førstegangslast.
+`sync_status` starter med watermark `0`. Å laste hele registeret via delta er ikke
+praktisk (~24 mill. hendelser). Bruk derfor **seed-workflowen** én gang for å laste
+alle ~1,16 mill. enheter, og sett watermark til nåværende punkt. Etterpå holder
+`brreg-enheter-sync` alt løpende oppdatert.
 
-For å laste **hele registeret** (~1,16 mill. enheter) bør du først gjøre en
-engangs **bulk-last** fra `https://data.brreg.no/enhetsregisteret/api/enheter/lastned`
-(~600 MB gzip / ~2 GB JSON), og deretter sette watermark til nåværende høyeste
-`oppdateringsid`. Etter det holder den inkrementelle workflowen alt oppdatert.
+### 1. Last ned + konverter + finn watermark
+brreg sin bulk-fil er en gigantisk JSON-array (~2 GB), som Hop ikke kan streame.
+`tools/seed-prep.py` laster den ned, strøm-konverterer til NDJSON (én enhet pr.
+linje – lavt minne) og finner nåværende høyeste `oppdateringsid`:
 
-> Bulk-seedingen er ikke inkludert ennå (den krever en egen tilnærming pga.
-> filstørrelsen). Si ifra, så bygger jeg den som neste steg.
-
-Vil du bare teste den inkrementelle flyten uten full last, kan du sette
-watermark til en nylig verdi:
-
-```sql
--- start "fra nå" (kun fremtidige endringer fanges opp)
-UPDATE sync_status SET verdi = '<nåværende_maks_oppdateringsid>'
- WHERE nokkel = 'enheter_oppdateringsid';
+```bash
+python tools/seed-prep.py hop/seed/enheter.ndjson
 ```
+Skriptet bruker kun Python-standardbibliotek. Til slutt skriver det ut en
+`SEED_WATERMARK`-verdi – noter den. (Har du ikke Python: `docker run --rm -v
+"${PWD}:/data" -w /data python:3-slim python tools/seed-prep.py hop/seed/enheter.ndjson`.)
+
+### 2. Kjør seed-workflowen
+Åpne `workflows/brreg-seed.hwf` i Hop og kjør den med parametrene:
+- `SEED_FILE` = `${PROJECT_HOME}/seed/enheter.ndjson` (standard)
+- `SEED_WATERMARK` = verdien fra steg 1
+
+Eller fra kommandolinjen:
+```bash
+hop-run.sh --project=brreg --runconfig=local \
+  --file='${PROJECT_HOME}/workflows/brreg-seed.hwf' \
+  --parameters=SEED_WATERMARK=<verdi>
+```
+Workflowen tømmer `enheter`, bulk-inserter alle enhetene (strømmende, ~1–2 min),
+og setter watermark. **NB:** bulk-fila er et døgnferskt øyeblikksbilde – kjør
+`brreg-enheter-sync` rett etterpå for å fange opp endringer siden snapshotet.
+
+### 3. Videre drift
+Kjør `brreg-enheter-sync` regelmessig (manuelt eller på timeplan) – den henter kun
+nye/endrede enheter siden sist.
 
 ## Merknader
 - **Adresser**: `forr_adresse`/`post_adresse` tar første adresselinje (`adresse[0]`).
