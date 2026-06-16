@@ -1,106 +1,102 @@
 # brreg → PostgreSQL (Apache Hop)
 
-Apache Hop-workflow som henter enheter fra Brønnøysundregistrene
-(enhetsregisteret) og laster dem inn i PostgreSQL. Nye enheter settes inn,
-endrede enheter oppdateres (**upsert**). Løsningen bruker `oppdateringsid` som
-*watermark*, slik at hver kjøring kun henter enheter som er nye eller endret
-siden forrige kjøring — altså «data som ikke finnes / ikke er oppdatert fra
-før».
+Apache Hop-workflow som **inkrementelt** synkroniserer enheter fra
+Brønnøysundregistrene (enhetsregisteret) til PostgreSQL. Nye enheter settes inn,
+endrede oppdateres (**upsert**). Hver kjøring henter kun det som er endret siden
+forrige kjøring, via brreg sitt offisielle delta-API.
 
-Alt er bygget med **native Hop-transforms** (REST Client, JSON Input,
-Insert/Update m.fl.) — ingen PowerShell eller `psql` i Docker.
+> Hele løsningen er bygget med **native Hop-transforms** og er testet
+> ende-til-ende mot Apache Hop 2.13 + PostgreSQL.
 
-## Innhold
+## Hvordan det fungerer
+
+brreg sitt søke-API (`/api/enheter`) kan **ikke** brukes til delta eller til å
+hente hele registeret (det er begrenset til de første 10 000 treffene, og
+støtter ikke `oppdateringsid`). Riktig fremgangsmåte er:
+
+1. **Delta** hentes fra `/api/oppdateringer/enheter?oppdateringsid=<markør>` —
+   dette gir endrings-hendelser (org.nr + `oppdateringsid`), sortert stigende.
+   `oppdateringsid` brukes som **markør (cursor)**: hver batch starter på siste
+   id + 1.
+2. For hvert berørte org.nr slås enheten opp på `/api/enheter/{orgnr}` (gir full
+   enhetsdata; slettede enheter gir `slettedato`, ukjente gir 404 og hoppes over).
+3. Enheten **upsertes** i tabellen `enheter` (nøkkel = `organisasjonsnummer`).
+4. **Watermark** (høyeste behandlede `oppdateringsid`) lagres i `sync_status`,
+   slik at neste kjøring fortsetter der forrige slapp.
+
+### Workflow `brreg-enheter-sync.hwf`
 
 ```
-db/schema.sql                          DDL for tabellene (samme som workflowen oppretter)
-hop/project-config.json                Hop-prosjektkonfig med standardvariabler
-hop/metadata/rdbms/Brreg.json          Databasetilkobling (PostgreSQL, via variabler)
-hop/workflows/brreg-enheter-sync.hwf   Hovedworkflow (orkestrering)
-hop/pipelines/brreg-init.hpl           Leser watermark → variabel LAST_OPPDATERINGSID
-hop/pipelines/brreg-tell-sider.hpl     Finner antall sider → variabel TOTAL_PAGES
-hop/pipelines/brreg-last.hpl           Henter alle sider og gjør upsert mot enheter
+Start → Sjekk DB-tilkobling → Opprett tabeller → Les watermark
+      → Hent delta (Repeat-loop) → Oppdater watermark
 ```
 
-## Slik fungerer workflowen
+- **Les watermark** (`brreg-init.hpl`): leser watermark og setter `CURSOR = watermark + 1`.
+- **Hent delta**: en `Repeat`-action som kjører `brreg-delta-batch.hpl` om igjen til
+  en batch er tom. Hver batch: henter oppdateringer → deduper org.nr →
+  slår opp hver enhet → upsert → avanserer `CURSOR`. Tom batch setter `END_LOOP`
+  som stopper loopen.
+- **Oppdater watermark**: lagrer `CURSOR - 1` til `sync_status`.
 
-`brreg-enheter-sync.hwf` kjører stegene i rekkefølge:
+## Filer
 
-1. **Sjekk DB-tilkobling** – verifiserer at `Brreg`-tilkoblingen svarer.
-2. **Opprett tabeller** – kjører `CREATE TABLE IF NOT EXISTS` for `enheter` og
-   `sync_status`, og seeder watermark til `0` ved første kjøring.
-3. **Les watermark** (`brreg-init`) – henter siste lastede `oppdateringsid` fra
-   `sync_status` og legger den i variabelen `LAST_OPPDATERINGSID`.
-4. **Tell sider** (`brreg-tell-sider`) – kaller API-et med
-   `?oppdateringsid=LAST_OPPDATERINGSID&sort=oppdateringsid,asc` for å lese
-   `page.totalPages` for delta-settet → variabelen `TOTAL_PAGES`.
-5. **Last enheter** (`brreg-last`) – genererer én rad per side (`0 .. TOTAL_PAGES-1`),
-   henter hver side via REST, parser `_embedded.enheter` med JSON Input og kjører
-   en **Insert/Update** mot tabellen `enheter` (nøkkel = `organisasjonsnummer`).
-6. **Oppdater watermark** – setter `sync_status.verdi` til høyeste
-   `oppdateringsid` i tabellen, slik at neste kjøring fortsetter derfra.
-
-Hvis det ikke finnes nye/endrede enheter blir `TOTAL_PAGES = 0`, og steg 5 gjør
-ingenting. Watermarket forblir uendret.
-
-> **Førstegangskjøring:** Med watermark `0` hentes *hele* registeret
-> (~1,1 mill. enheter). Det tar tid og mange API-kall. Etterfølgende kjøringer
-> henter kun delta og går raskt.
+```
+db/schema.sql                              DDL for enheter + sync_status
+hop/project-config.json                    Hop-prosjektkonfig (API-URL-er, batch-størrelse)
+hop/metadata/rdbms/Brreg.json              Databasetilkobling (PostgreSQL)
+hop/metadata/pipeline-run-configuration/local.json
+hop/metadata/workflow-run-configuration/local.json
+hop/workflows/brreg-enheter-sync.hwf       Hovedworkflow
+hop/pipelines/brreg-init.hpl               Leser watermark → CURSOR
+hop/pipelines/brreg-delta-batch.hpl        Henter én batch og gjør upsert
+```
 
 ## Oppsett
 
-### 1. Variabler / hemmeligheter
-
-Databasetilkoblingen leser disse variablene (passord committes **ikke** til
-repoet — sett det som miljøvariabel):
-
-| Variabel             | Standard (i project-config) | Beskrivelse        |
-|----------------------|-----------------------------|--------------------|
-| `BRREG_DB_HOST`      | `localhost`                 | PostgreSQL host    |
-| `BRREG_DB_PORT`      | `5432`                      | PostgreSQL port    |
-| `BRREG_DB_NAME`      | `brreg`                     | Database           |
-| `BRREG_DB_USER`      | `hop`                       | Bruker             |
-| `BRREG_DB_PASSWORD`  | *(ikke satt)*               | **Sett selv**      |
-| `BRREG_API`          | enhetsregisteret-URL        | Basis-URL          |
-| `PAGE_SIZE`          | `500`                       | Enheter per side   |
-
-Sett passordet f.eks. slik før du starter Hop:
-
-```bash
-export BRREG_DB_PASSWORD='ditt_passord'
-```
+### 1. Database
+Tilkoblingen `Brreg` peker som standard på `localhost:5432`, database `brreg`,
+bruker `hop`, uten passord. Endre dette i Hop Gui under **Metadata → Relational
+Database Connection → Brreg**, og trykk **Test** (sett passord her hvis databasen
+din krever det — passord lagres ikke i repoet).
 
 ### 2. Åpne prosjektet i Hop
+**Projects → Add project → In a folder**, og pek *Home folder* til `hop/`-mappen
+(der `project-config.json` ligger). Tilkobling, pipelines og workflow lastes inn
+automatisk.
 
-1. I Hop Gui: **Projects → Add a project**, og pek `Home folder` til `hop/`
-   (mappen med `project-config.json`).
-2. Tilkoblingen `Brreg` og pipelines/workflows dukker opp automatisk.
-3. Åpne `brreg-enheter-sync.hwf` og trykk **Run**.
-
-### Kjøre fra kommandolinjen (hop-run)
+### 3. Kjør
+Åpne `workflows/brreg-enheter-sync.hwf` og trykk **Run**. Fra kommandolinjen:
 
 ```bash
-hop-run.sh \
-  --project=brreg \
-  --runconfig=local \
+hop-run.sh --project=brreg --runconfig=local \
   --file='${PROJECT_HOME}/workflows/brreg-enheter-sync.hwf'
 ```
 
-(På Windows: `hop-run.bat`.)
+## ⚠️ Førstegangslast (seeding)
 
-### 3. (Valgfritt) Opprett skjema manuelt
+`sync_status` starter med watermark `0`. Kjører du da inkrementelt, vil den
+forsøke å spille av *alle* historiske endringer (~24 mill. hendelser) med ett
+API-oppslag per enhet — det er ikke praktisk for en førstegangslast.
 
-Workflowen oppretter tabellene selv, men du kan også kjøre `db/schema.sql`
-direkte mot databasen om du vil sette opp skjemaet på forhånd.
+For å laste **hele registeret** (~1,16 mill. enheter) bør du først gjøre en
+engangs **bulk-last** fra `https://data.brreg.no/enhetsregisteret/api/enheter/lastned`
+(~600 MB gzip / ~2 GB JSON), og deretter sette watermark til nåværende høyeste
+`oppdateringsid`. Etter det holder den inkrementelle workflowen alt oppdatert.
 
-## Merknader / kjente begrensninger
+> Bulk-seedingen er ikke inkludert ennå (den krever en egen tilnærming pga.
+> filstørrelsen). Si ifra, så bygger jeg den som neste steg.
 
-- **Adresser**: `forr_adresse`/`post_adresse` i API-et er en liste med
-  adresselinjer. Pipelinen henter første linje (`adresse[0]`). Vil du
-  konkatenere flere linjer, kan det gjøres med en «User Defined Java
-  Expression»-transform i `brreg-last.hpl`.
-- **Sidetelling** beregnes én gang ved start. Endres datasettet midt i en
-  lang kjøring, kan antallet drifte litt — neste kjøring fanger opp resten via
-  watermark.
-- **Verifisering**: Filene er Hop-XML laget for å åpnes i Hop Gui. Sjekk gjerne
-  felt-typer (særlig dato/boolean) og tilkoblingsdetaljer i GUI før produksjon.
+Vil du bare teste den inkrementelle flyten uten full last, kan du sette
+watermark til en nylig verdi:
+
+```sql
+-- start "fra nå" (kun fremtidige endringer fanges opp)
+UPDATE sync_status SET verdi = '<nåværende_maks_oppdateringsid>'
+ WHERE nokkel = 'enheter_oppdateringsid';
+```
+
+## Merknader
+- **Adresser**: `forr_adresse`/`post_adresse` tar første adresselinje (`adresse[0]`).
+- **Slettede enheter** fanges opp via `slettedato`-kolonnen.
+- **Batch-størrelse** styres av variabelen `BATCH_SIZE` (standard 500).
+- Validert mot Apache Hop 2.13. Eldre/nyere versjoner kan ha små XML-forskjeller.

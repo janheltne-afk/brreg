@@ -1,5 +1,5 @@
 {
-  "description": "Apache Hop-prosjekt for synkronisering av brreg-enhetsregisteret til PostgreSQL.",
+  "description": "Apache Hop-prosjekt for inkrementell synkronisering av brreg-enhetsregisteret til PostgreSQL.",
   "company": "",
   "department": "",
   "metadataBaseFolder": "${PROJECT_HOME}/metadata",
@@ -11,32 +11,17 @@
     {
       "name": "BRREG_API",
       "value": "https://data.brreg.no/enhetsregisteret/api/enheter",
-      "description": "Basis-URL for enhetsregisteret"
+      "description": "Basis-URL for enkeltoppslag av enheter"
     },
     {
-      "name": "PAGE_SIZE",
+      "name": "BRREG_API_OPPD",
+      "value": "https://data.brreg.no/enhetsregisteret/api/oppdateringer/enheter",
+      "description": "Delta-/oppdateringer-endepunkt"
+    },
+    {
+      "name": "BATCH_SIZE",
       "value": "500",
-      "description": "Antall enheter per side fra API-et"
-    },
-    {
-      "name": "BRREG_DB_HOST",
-      "value": "localhost",
-      "description": "PostgreSQL host"
-    },
-    {
-      "name": "BRREG_DB_PORT",
-      "value": "5432",
-      "description": "PostgreSQL port"
-    },
-    {
-      "name": "BRREG_DB_NAME",
-      "value": "brreg",
-      "description": "PostgreSQL database"
-    },
-    {
-      "name": "BRREG_DB_USER",
-      "value": "hop",
-      "description": "PostgreSQL bruker"
+      "description": "Antall oppdateringer per batch"
     }
   ]
 }

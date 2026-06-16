@@ -2,22 +2,15 @@
 <workflow>
   <name>brreg-enheter-sync</name>
   <name_sync_with_filename>Y</name_sync_with_filename>
-  <description>Henter enheter fra Brønnøysundregistrene (enhetsregisteret) og laster dem inn i PostgreSQL. Setter inn nye enheter og oppdaterer endrede (upsert). Bruker oppdateringsid som watermark slik at kun nye/endrede enheter hentes ved hver kjøring.</description>
+  <description>Inkrementell synkronisering av brreg-enheter til PostgreSQL. Leser watermark (oppdateringsid), henter endringer fra /api/oppdateringer/enheter i batcher (cursor), slår opp hver berørte enhet og gjør upsert. Repeat-loopen kjører til en batch er tom, deretter lagres ny watermark.</description>
   <created_user>-</created_user>
   <modified_user>-</modified_user>
   <created_date>2026/06/16 00:00:00.000</created_date>
   <modified_date>2026/06/16 00:00:00.000</modified_date>
   <parameters>
-    <parameter>
-      <name>BRREG_API</name>
-      <default_value>https://data.brreg.no/enhetsregisteret/api/enheter</default_value>
-      <description>Basis-URL for enhetsregisteret</description>
-    </parameter>
-    <parameter>
-      <name>PAGE_SIZE</name>
-      <default_value>500</default_value>
-      <description>Antall enheter per side</description>
-    </parameter>
+    <parameter><name>BRREG_API</name><default_value>https://data.brreg.no/enhetsregisteret/api/enheter</default_value><description>Basis-URL for enkeltoppslag av enheter</description></parameter>
+    <parameter><name>BRREG_API_OPPD</name><default_value>https://data.brreg.no/enhetsregisteret/api/oppdateringer/enheter</default_value><description>Delta-/oppdateringer-endepunkt</description></parameter>
+    <parameter><name>BATCH_SIZE</name><default_value>500</default_value><description>Antall oppdateringer per batch</description></parameter>
   </parameters>
   <actions>
     <action>
@@ -58,7 +51,7 @@
     </action>
     <action>
       <name>Opprett tabeller</name>
-      <description>Oppretter tabellene enheter og sync_status hvis de ikke finnes, og seeder watermark.</description>
+      <description/>
       <type>SQL</type>
       <sql>CREATE TABLE IF NOT EXISTS enheter (
     organisasjonsnummer              TEXT PRIMARY KEY,
@@ -91,6 +84,7 @@
     institusjonell_sektor_kode       TEXT,
     institusjonell_sektor_beskrivelse TEXT,
     sist_oppdatert                   TEXT,
+    slettedato                       DATE,
     oppdateringsid                   BIGINT,
     hentet_dato                      TIMESTAMPTZ DEFAULT now()
 );
@@ -99,6 +93,7 @@ CREATE TABLE IF NOT EXISTS sync_status (
     verdi        TEXT,
     sist_kjoert  TIMESTAMPTZ
 );
+ALTER TABLE enheter ADD COLUMN IF NOT EXISTS slettedato DATE;
 ALTER TABLE enheter ADD COLUMN IF NOT EXISTS oppdateringsid BIGINT;
 ALTER TABLE enheter ADD COLUMN IF NOT EXISTS hentet_dato TIMESTAMPTZ DEFAULT now();
 CREATE INDEX IF NOT EXISTS idx_enheter_oppdateringsid ON enheter (oppdateringsid);
@@ -119,7 +114,7 @@ ON CONFLICT (nokkel) DO NOTHING;</sql>
     </action>
     <action>
       <name>Les watermark</name>
-      <description>Leser siste lastede oppdateringsid inn i variabelen LAST_OPPDATERINGSID.</description>
+      <description>Setter CURSOR = watermark + 1.</description>
       <type>PIPELINE</type>
       <filename>${PROJECT_HOME}/pipelines/brreg-init.hpl</filename>
       <params_from_previous>N</params_from_previous>
@@ -147,28 +142,24 @@ ON CONFLICT (nokkel) DO NOTHING;</sql>
       <attributes_hac/>
     </action>
     <action>
-      <name>Tell sider</name>
-      <description>Finner antall sider i delta-settet og setter variabelen TOTAL_PAGES.</description>
-      <type>PIPELINE</type>
-      <filename>${PROJECT_HOME}/pipelines/brreg-tell-sider.hpl</filename>
-      <params_from_previous>N</params_from_previous>
-      <exec_per_row>N</exec_per_row>
-      <clear_rows>N</clear_rows>
-      <clear_files>N</clear_files>
-      <set_logfile>N</set_logfile>
-      <logfile/>
-      <logext/>
-      <add_date>N</add_date>
-      <add_time>N</add_time>
-      <loglevel>Basic</loglevel>
-      <set_append_logfile>N</set_append_logfile>
-      <wait_until_finished>Y</wait_until_finished>
-      <follow_abort_remote>N</follow_abort_remote>
-      <create_parent_folder>N</create_parent_folder>
+      <name>Hent delta</name>
+      <description>Kjører delta-batch gjentatte ganger til en tom batch setter END_LOOP.</description>
+      <type>Repeat</type>
+      <filename>${PROJECT_HOME}/pipelines/brreg-delta-batch.hpl</filename>
       <run_configuration>local</run_configuration>
-      <parameters>
-        <pass_all_parameters>Y</pass_all_parameters>
-      </parameters>
+      <variable_name>END_LOOP</variable_name>
+      <variable_value/>
+      <delay/>
+      <keep_values>N</keep_values>
+      <logfile_enabled>N</logfile_enabled>
+      <logfile_appended>Y</logfile_appended>
+      <logfile_base/>
+      <logfile_extension>log</logfile_extension>
+      <logfile_add_date>Y</logfile_add_date>
+      <logfile_add_time>N</logfile_add_time>
+      <logfile_add_repetition>N</logfile_add_repetition>
+      <logfile_update_interval>5000</logfile_update_interval>
+      <parameters/>
       <attributes/>
       <parallel>N</parallel>
       <xloc>720</xloc>
@@ -176,43 +167,14 @@ ON CONFLICT (nokkel) DO NOTHING;</sql>
       <attributes_hac/>
     </action>
     <action>
-      <name>Last enheter</name>
-      <description>Henter alle sider og gjør upsert mot tabellen enheter.</description>
-      <type>PIPELINE</type>
-      <filename>${PROJECT_HOME}/pipelines/brreg-last.hpl</filename>
-      <params_from_previous>N</params_from_previous>
-      <exec_per_row>N</exec_per_row>
-      <clear_rows>N</clear_rows>
-      <clear_files>N</clear_files>
-      <set_logfile>N</set_logfile>
-      <logfile/>
-      <logext/>
-      <add_date>N</add_date>
-      <add_time>N</add_time>
-      <loglevel>Basic</loglevel>
-      <set_append_logfile>N</set_append_logfile>
-      <wait_until_finished>Y</wait_until_finished>
-      <follow_abort_remote>N</follow_abort_remote>
-      <create_parent_folder>N</create_parent_folder>
-      <run_configuration>local</run_configuration>
-      <parameters>
-        <pass_all_parameters>Y</pass_all_parameters>
-      </parameters>
-      <attributes/>
-      <parallel>N</parallel>
-      <xloc>880</xloc>
-      <yloc>80</yloc>
-      <attributes_hac/>
-    </action>
-    <action>
       <name>Oppdater watermark</name>
-      <description>Setter watermark til høyeste oppdateringsid som finnes i tabellen.</description>
+      <description>Lagrer ny watermark = CURSOR - 1 (høyeste behandlede oppdateringsid).</description>
       <type>SQL</type>
       <sql>UPDATE sync_status
-   SET verdi = (SELECT COALESCE(MAX(oppdateringsid), 0)::text FROM enheter),
+   SET verdi = (${CURSOR}::bigint - 1)::text,
        sist_kjoert = now()
  WHERE nokkel = 'enheter_oppdateringsid';</sql>
-      <useVariableSubstitution>N</useVariableSubstitution>
+      <useVariableSubstitution>Y</useVariableSubstitution>
       <sqlfromfile>N</sqlfromfile>
       <sqlfilename/>
       <sqlfilename_encoding/>
@@ -220,66 +182,17 @@ ON CONFLICT (nokkel) DO NOTHING;</sql>
       <connection>Brreg</connection>
       <attributes/>
       <parallel>N</parallel>
-      <xloc>1040</xloc>
+      <xloc>880</xloc>
       <yloc>80</yloc>
       <attributes_hac/>
     </action>
   </actions>
   <hops>
-    <hop>
-      <from>Start</from>
-      <to>Sjekk DB-tilkobling</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>Y</unconditional>
-    </hop>
-    <hop>
-      <from>Sjekk DB-tilkobling</from>
-      <to>Opprett tabeller</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Opprett tabeller</from>
-      <to>Les watermark</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Les watermark</from>
-      <to>Tell sider</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Tell sider</from>
-      <to>Last enheter</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Last enheter</from>
-      <to>Oppdater watermark</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
+    <hop><from>Start</from><to>Sjekk DB-tilkobling</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>Y</unconditional></hop>
+    <hop><from>Sjekk DB-tilkobling</from><to>Opprett tabeller</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>N</unconditional></hop>
+    <hop><from>Opprett tabeller</from><to>Les watermark</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>N</unconditional></hop>
+    <hop><from>Les watermark</from><to>Hent delta</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>N</unconditional></hop>
+    <hop><from>Hent delta</from><to>Oppdater watermark</to><from_nr>0</from_nr><to_nr>0</to_nr><enabled>Y</enabled><evaluation>Y</evaluation><unconditional>N</unconditional></hop>
   </hops>
   <notepads/>
   <attributes/>
