@@ -16,7 +16,8 @@
     <modified_user>-</modified_user>
     <modified_date>2026/06/16 00:00:00.000</modified_date>
   </info>
-  <notepads/>
+  <notepads>
+  </notepads>
   <order>
     <hop>
       <from>Les siste oppdateringsid</from>
@@ -24,42 +25,40 @@
       <enabled>Y</enabled>
     </hop>
   </order>
-  <transforms>
-    <transform>
-      <name>Les siste oppdateringsid</name>
-      <type>TableInput</type>
-      <description/>
-      <connection>Brreg</connection>
-      <sql>SELECT COALESCE(verdi,'0') AS verdi FROM sync_status WHERE nokkel='enheter_oppdateringsid'</sql>
-      <limit>0</limit>
-      <execute_each_row>N</execute_each_row>
-      <variables_active>N</variables_active>
-      <lazy_conversion_active>N</lazy_conversion_active>
-      <attributes/>
-      <GUI>
-        <xloc>160</xloc>
-        <yloc>96</yloc>
-      </GUI>
-    </transform>
-    <transform>
-      <name>Sett LAST_OPPDATERINGSID</name>
-      <type>SetVariable</type>
-      <description/>
-      <fields>
-        <field>
-          <variable_name>LAST_OPPDATERINGSID</variable_name>
-          <field_name>verdi</field_name>
-          <variable_type>ROOT_WORKFLOW</variable_type>
-          <default_value>0</default_value>
-        </field>
-      </fields>
-      <use_formatting>N</use_formatting>
-      <attributes/>
-      <GUI>
-        <xloc>400</xloc>
-        <yloc>96</yloc>
-      </GUI>
-    </transform>
-  </transforms>
+  <transform>
+    <name>Les siste oppdateringsid</name>
+    <type>TableInput</type>
+    <description/>
+    <connection>Brreg</connection>
+    <sql>SELECT COALESCE(verdi,'0') AS verdi FROM sync_status WHERE nokkel='enheter_oppdateringsid'</sql>
+    <limit>0</limit>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <GUI>
+      <xloc>160</xloc>
+      <yloc>96</yloc>
+    </GUI>
+  </transform>
+  <transform>
+    <name>Sett LAST_OPPDATERINGSID</name>
+    <type>SetVariable</type>
+    <description/>
+    <fields>
+      <field>
+        <variable_name>LAST_OPPDATERINGSID</variable_name>
+        <field_name>verdi</field_name>
+        <variable_type>ROOT_WORKFLOW</variable_type>
+        <default_value>0</default_value>
+      </field>
+    </fields>
+    <use_formatting>N</use_formatting>
+    <attributes/>
+    <GUI>
+      <xloc>400</xloc>
+      <yloc>96</yloc>
+    </GUI>
+  </transform>
   <attributes/>
 </pipeline>
