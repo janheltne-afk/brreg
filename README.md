@@ -67,8 +67,16 @@ og upserter nøkkeltall (balanse + resultat) til tabellen `regnskap`.
 - Org uten regnskap gir 404 og hoppes over; org med kan ha flere årsregnskap
   (ett per år) — alle lagres (nøkkel = regnskap-`id`).
 - **NB:** å kjøre for alle ~1,16 mill. enheter tar flere timer (de fleste gir 404).
-  Vil du begrense, rediger SQL-en i transformen *Org-numre* i
-  `brreg-regnskap-last.hpl`, f.eks. `... WHERE organisasjonsform_kode IN ('AS','ASA')`.
+  Standard SQL i transformen *Org-numre* henter derfor kun `AS`/`ASA` og hopper
+  over org som alt er lastet (gjenopptakbar). Vil du ha flere selskapsformer,
+  utvid `IN ('AS','ASA')`.
+- **Kjør store jobber headless, ikke i GUI-et.** Hop Gui hoper opp logg i minnet
+  over timer og kan krasje (og ta med seg andre programmer) på en så stor jobb.
+  Kjør i stedet fra kommandolinjen:
+  ```
+  hop-run.bat -j brreg -r local -f "${PROJECT_HOME}/workflows/brreg-regnskap.hwf"
+  ```
+  Avbrutt kjøring? Bare kjør igjen — den fortsetter der den slapp.
 - Kjør på nytt når du vil oppdatere (upsert på `id`). Tabellen `regnskap` har én
   rad per årsregnskap med bl.a. `sum_eiendeler`, `sum_driftsinntekter`,
   `driftsresultat`, `aarsresultat`, `sum_egenkapital`, `sum_gjeld`.
