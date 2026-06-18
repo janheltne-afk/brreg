@@ -67,16 +67,22 @@ og upserter nøkkeltall (balanse + resultat) til tabellen `regnskap`.
 - Org uten regnskap gir 404 og hoppes over; org med kan ha flere årsregnskap
   (ett per år) — alle lagres (nøkkel = regnskap-`id`).
 - **NB:** å kjøre for alle ~1,16 mill. enheter tar flere timer (de fleste gir 404).
-  Standard SQL i transformen *Org-numre* henter derfor kun `AS`/`ASA` og hopper
-  over org som alt er lastet (gjenopptakbar). Vil du ha flere selskapsformer,
-  utvid `IN ('AS','ASA')`.
+  Standard SQL i transformen *Org-numre* henter derfor kun `AS`/`ASA`. Vil du ha
+  flere selskapsformer, utvid `IN ('AS','ASA')`.
+- **Akkumulerer historikk fremover:** API-et gir kun siste år per selskap, men
+  upsert er på regnskap-`id`. Kjører du workflowen jevnlig (f.eks. hvert
+  kvartal/år), legges nye årsregnskap til som nye rader mens gamle beholdes — så
+  `regnskap` bygger flerårig historikk over tid. (Dyp *fortid* finnes ikke gratis
+  via dette API-et – kun siste år.)
+- **Gjenoppta en avbrutt førstegangslast:** legg midlertidig til
+  `AND NOT EXISTS (SELECT 1 FROM regnskap r WHERE r.organisasjonsnummer = enheter.organisasjonsnummer)`
+  i *Org-numre*-SQL-en så hoppes alt ferdiglastet over. Fjern den igjen for
+  periodisk oppdatering (ellers fanges ikke nye år for eksisterende selskap).
 - **Kjør store jobber headless, ikke i GUI-et.** Hop Gui hoper opp logg i minnet
-  over timer og kan krasje (og ta med seg andre programmer) på en så stor jobb.
-  Kjør i stedet fra kommandolinjen:
+  over timer og kan krasje. Kjør i stedet fra kommandolinjen:
   ```
   hop-run.bat -j brreg -r local -f "${PROJECT_HOME}/workflows/brreg-regnskap.hwf"
   ```
-  Avbrutt kjøring? Bare kjør igjen — den fortsetter der den slapp.
 - Kjør på nytt når du vil oppdatere (upsert på `id`). Tabellen `regnskap` har én
   rad per årsregnskap med bl.a. `sum_eiendeler`, `sum_driftsinntekter`,
   `driftsresultat`, `aarsresultat`, `sum_egenkapital`, `sum_gjeld`.

@@ -38,7 +38,7 @@
     <copies>1</copies>
     <partitioning><method>none</method><schema_name/></partitioning>
     <connection>Brreg</connection>
-    <sql>SELECT e.organisasjonsnummer FROM enheter e WHERE e.organisasjonsform_kode IN ('AS','ASA') AND NOT EXISTS (SELECT 1 FROM regnskap r WHERE r.organisasjonsnummer = e.organisasjonsnummer)</sql>
+    <sql>SELECT organisasjonsnummer FROM enheter WHERE organisasjonsform_kode IN ('AS','ASA')</sql>
     <limit>0</limit>
     <execute_each_row>N</execute_each_row>
     <variables_active>N</variables_active>
