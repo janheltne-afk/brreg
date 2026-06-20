@@ -7,6 +7,10 @@ audit/
 .env
 *.secret
 
+# Python
+__pycache__/
+*.pyc
+
 # Seed-data (store filer – lastes ned/generes lokalt)
 hop/seed/*.ndjson
 hop/seed/*.json
