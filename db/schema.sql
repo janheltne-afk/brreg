@@ -4,6 +4,12 @@
 
 CREATE SCHEMA IF NOT EXISTS brreg;
 
+-- Standard søkesti for postgres-rollen: ukvalifiserte tabellnavn (som Hop bruker)
+-- løses mot `brreg` først, deretter `public`. Gjør at Hop skriver til brreg-schemaet
+-- uten å måtte kvalifisere hver tabell eller sette currentSchema i tilkoblingen.
+-- (Krever superbruker; kjøres via Management API / som postgres.)
+ALTER ROLE postgres IN DATABASE postgres SET search_path = brreg, public;
+
 CREATE TABLE IF NOT EXISTS brreg.enheter (
     organisasjonsnummer              TEXT PRIMARY KEY,
     navn                             TEXT,
