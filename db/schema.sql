@@ -1,7 +1,10 @@
--- Skjema for brreg-enhetsregisteret i PostgreSQL
--- Kjøres idempotent av workflowen (CREATE ... IF NOT EXISTS).
+-- Skjema for brreg-enhetsregisteret i PostgreSQL / Supabase.
+-- Alle objekter ligger i et dedikert schema `brreg` (adskilt fra `public`,
+-- som i Supabase kan inneholde andre apper). Kjøres idempotent.
 
-CREATE TABLE IF NOT EXISTS enheter (
+CREATE SCHEMA IF NOT EXISTS brreg;
+
+CREATE TABLE IF NOT EXISTS brreg.enheter (
     organisasjonsnummer              TEXT PRIMARY KEY,
     navn                             TEXT,
     organisasjonsform_kode           TEXT,
@@ -38,29 +41,29 @@ CREATE TABLE IF NOT EXISTS enheter (
 );
 
 -- Watermark/sync-tilstand: hvilken oppdateringsid vi har lastet til og med.
-CREATE TABLE IF NOT EXISTS sync_status (
+CREATE TABLE IF NOT EXISTS brreg.sync_status (
     nokkel       TEXT PRIMARY KEY,
     verdi        TEXT,
     sist_kjoert  TIMESTAMPTZ
 );
 
 -- Legg til kolonner på en eventuell eksisterende enheter-tabell (eldre oppsett).
-ALTER TABLE enheter ADD COLUMN IF NOT EXISTS slettedato DATE;
-ALTER TABLE enheter ADD COLUMN IF NOT EXISTS oppdateringsid BIGINT;
-ALTER TABLE enheter ADD COLUMN IF NOT EXISTS hentet_dato TIMESTAMPTZ DEFAULT now();
+ALTER TABLE brreg.enheter ADD COLUMN IF NOT EXISTS slettedato DATE;
+ALTER TABLE brreg.enheter ADD COLUMN IF NOT EXISTS oppdateringsid BIGINT;
+ALTER TABLE brreg.enheter ADD COLUMN IF NOT EXISTS hentet_dato TIMESTAMPTZ DEFAULT now();
 
 -- Indeks som brukes for å finne neste delta-batch raskt.
-CREATE INDEX IF NOT EXISTS idx_enheter_oppdateringsid ON enheter (oppdateringsid);
+CREATE INDEX IF NOT EXISTS idx_enheter_oppdateringsid ON brreg.enheter (oppdateringsid);
 
 -- Seed watermark hvis den ikke finnes (verdi 0 = hent alt fra start).
-INSERT INTO sync_status (nokkel, verdi, sist_kjoert)
+INSERT INTO brreg.sync_status (nokkel, verdi, sist_kjoert)
 VALUES ('enheter_oppdateringsid', '0', NULL)
 ON CONFLICT (nokkel) DO NOTHING;
 
 -- ============================================================
 -- Regnskap (årsregnskap-nøkkeltall, hentet per organisasjonsnummer)
 -- ============================================================
-CREATE TABLE IF NOT EXISTS regnskap (
+CREATE TABLE IF NOT EXISTS brreg.regnskap (
     id                              BIGINT PRIMARY KEY,
     organisasjonsnummer             TEXT,
     journalnr                       TEXT,
@@ -94,4 +97,4 @@ CREATE TABLE IF NOT EXISTS regnskap (
     aarsresultat                    NUMERIC,
     hentet_dato                     TIMESTAMPTZ DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS idx_regnskap_orgnr ON regnskap (organisasjonsnummer);
+CREATE INDEX IF NOT EXISTS idx_regnskap_orgnr ON brreg.regnskap (organisasjonsnummer);

@@ -92,11 +92,36 @@ og upserter nøkkeltall (balanse + resultat) til tabellen `regnskap`.
 
 ## Oppsett
 
-### 1. Database
-Tilkoblingen `Brreg` peker som standard på `localhost:5432`, database `brreg`,
-bruker `hop`, uten passord. Endre dette i Hop Gui under **Metadata → Relational
-Database Connection → Brreg**, og trykk **Test** (sett passord her hvis databasen
-din krever det — passord lagres ikke i repoet).
+### 1. Database (Supabase)
+Tilkoblingen `Brreg` peker på Supabase-prosjektet via **Session pooler** (IPv4):
+host `aws-0-eu-west-1.pooler.supabase.com`, port `5432`, database `postgres`,
+bruker `postgres.<prosjekt-ref>`. Alle brreg-tabellene ligger i et eget schema
+**`brreg`** (adskilt fra `public`), styrt av JDBC-opsjonen `currentSchema=brreg`.
+
+I Hop Gui under **Metadata → Relational Database Connection → Brreg**:
+1. Sett **passord** (database-passordet fra Supabase) — lagres ikke i repoet.
+2. Sjekk under fanen **Options** at `currentSchema = brreg` står der (så alle
+   ukvalifiserte tabellnavn havner i `brreg`-schemaet).
+3. Trykk **Test**. NB: din maskin må ha utgående tilgang til pooler-host på 5432.
+
+> **Schema er allerede opprettet.** `db/schema.sql` er kjørt mot Supabase, så
+> `brreg.enheter`, `brreg.sync_status` (watermark = 0) og `brreg.regnskap`
+> finnes. Workflowen oppretter dem uansett idempotent ved kjøring.
+
+#### Jobbe mot databasen uten åpen Postgres-port (HTTPS)
+I miljøer der bare HTTPS (443) slipper ut og Postgres-porten (5432) er stengt,
+kan du ikke bruke `psql`/Hop direkte. Bruk i stedet Supabase **Management API**
+over HTTPS via hjelpeskriptet:
+
+```bash
+cp .env.example .env       # fyll inn SUPABASE_ACCESS_TOKEN + SUPABASE_PROJECT_REF
+source .env
+tools/run-sql.sh "select count(*) from brreg.enheter;"
+tools/run-sql.sh -f db/schema.sql      # (re)kjør skjemaet
+```
+
+Personal Access Token lages på <https://supabase.com/dashboard/account/tokens>.
+`.env` er gitignored og committes aldri.
 
 ### 2. Åpne prosjektet i Hop
 **Projects → Add project → In a folder**, og pek *Home folder* til `hop/`-mappen

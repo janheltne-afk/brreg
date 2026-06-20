@@ -1,18 +1,19 @@
 {
   "rdbms": {
     "POSTGRESQL": {
-      "databaseName": "brreg",
+      "databaseName": "postgres",
       "pluginId": "POSTGRESQL",
       "accessType": 0,
-      "hostname": "localhost",
+      "hostname": "aws-0-eu-west-1.pooler.supabase.com",
       "password": "Encrypted ",
       "pluginName": "PostgreSQL",
       "port": "5432",
-      "username": "hop",
+      "username": "postgres.ojvqmajyaexisglsykww",
       "attributes": {
         "SUPPORTS_BOOLEAN_DATA_TYPE": "Y",
         "SUPPORTS_TIMESTAMP_DATA_TYPE": "Y",
-        "QUOTE_ALL_FIELDS": "N"
+        "QUOTE_ALL_FIELDS": "N",
+        "EXTRA_OPTION_POSTGRESQL.currentSchema": "brreg"
       }
     }
   },
