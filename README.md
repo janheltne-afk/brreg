@@ -123,6 +123,25 @@ tools/run-sql.sh -f db/schema.sql      # (re)kjør skjemaet
 Personal Access Token lages på <https://supabase.com/dashboard/account/tokens>.
 `.env` er gitignored og committes aldri.
 
+#### Last inn data over HTTPS (når 5432 er stengt)
+Når Postgres-porten er stengt kan ikke Hop laste data. Disse skriptene laster i
+stedet rett inn i Supabase via Management API (de leser `SUPABASE_ACCESS_TOKEN`
+og `SUPABASE_PROJECT_REF` fra miljøet):
+
+```bash
+# Førstegangslast (seeding) av enheter – krever nedlastet bulk-gz (se seed-prep.py)
+python3 tools/load-enheter.py enheter_alle.json.gz
+tools/run-sql.sh "update brreg.sync_status set verdi='<SEED_WATERMARK>', \
+                  sist_kjoert=now() where nokkel='enheter_oppdateringsid';"
+
+# Årsregnskap for alle AS/ASA (gjenopptakbar – hopp over alt ferdiglastet)
+python3 tools/load-regnskap.py 12 AS,ASA
+```
+
+Begge er idempotente (upsert) og bruker `jsonb_to_recordset` for kompakte
+batch-upserts. `load-regnskap.py` kjører flere oppslag parallelt og kan
+gjenopptas hvis den avbrytes.
+
 ### 2. Åpne prosjektet i Hop
 **Projects → Add project → In a folder**, og pek *Home folder* til `hop/`-mappen
 (der `project-config.json` ligger). Tilkobling, pipelines og workflow lastes inn
