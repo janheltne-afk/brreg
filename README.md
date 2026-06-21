@@ -134,13 +134,24 @@ python3 tools/load-enheter.py enheter_alle.json.gz
 tools/run-sql.sh "update brreg.sync_status set verdi='<SEED_WATERMARK>', \
                   sist_kjoert=now() where nokkel='enheter_oppdateringsid';"
 
-# Årsregnskap for alle AS/ASA (gjenopptakbar – hopp over alt ferdiglastet)
-python3 tools/load-regnskap.py 12 AS,ASA
+# Årsregnskap for alle AS/ASA – årlig oppdatering (fanger nye år)
+python3 tools/load-regnskap.py 12 AS,ASA full
+# Fullføre en avbrutt førstegangslast (hopper over ferdiglastede)
+python3 tools/load-regnskap.py 12 AS,ASA resume
 ```
 
 Begge er idempotente (upsert) og bruker `jsonb_to_recordset` for kompakte
-batch-upserts. `load-regnskap.py` kjører flere oppslag parallelt og kan
-gjenopptas hvis den avbrytes.
+batch-upserts. `load-regnskap.py` kjører flere oppslag parallelt.
+
+**Viktig om årlig oppdatering:** API-et gir kun siste år per selskap. Kjør derfor
+`load-regnskap.py ... full` periodisk (typisk **én gang i året, sent på sommeren/
+høsten** etter innleveringsfristen 31. juli). `full` sjekker *alle* AS/ASA på nytt,
+så det nye årets innlevering (ny regnskap-`id`) legges til som nye rader mens
+gamle beholdes – slik bygges flerårig historikk *fremover*. Bruk `resume` kun for
+å gjøre ferdig en avbrutt førstegangslast; den hopper over selskaper som alt har
+regnskap og vil derfor *ikke* fange nye år. (Eldre historikk enn det API-et gir
+finnes ikke som åpne data – se brreg sitt regnskaps-abonnement, kun for store
+abonnenter, eller kommersielle tredjeparter.)
 
 ### 2. Åpne prosjektet i Hop
 **Projects → Add project → In a folder**, og pek *Home folder* til `hop/`-mappen

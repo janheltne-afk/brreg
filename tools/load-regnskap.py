@@ -15,8 +15,9 @@ regnskap-`id` via Supabase Management API.
 Bruk:
   export SUPABASE_ACCESS_TOKEN=sbp_...
   export SUPABASE_PROJECT_REF=<prosjekt-ref>
-  python3 tools/load-regnskap.py [antall_workers] [selskapsformer]
-    # f.eks: python3 tools/load-regnskap.py 12 AS,ASA
+  python3 tools/load-regnskap.py [workers] [selskapsformer] [modus]
+    # Årlig oppdatering (sjekk alle, fang nye år):  python3 tools/load-regnskap.py 12 AS,ASA full
+    # Fullfør en avbrutt førstegangslast (hopp ferdige): python3 tools/load-regnskap.py 12 AS,ASA resume
 """
 import os, sys, json, subprocess, time, threading
 from concurrent.futures import ThreadPoolExecutor
@@ -27,6 +28,14 @@ QURL = f"https://api.supabase.com/v1/projects/{REF}/database/query"
 RKURL = "https://data.brreg.no/regnskapsregisteret/regnskap/"
 WORKERS = int(sys.argv[1]) if len(sys.argv) > 1 else 12
 FORMER = (sys.argv[2] if len(sys.argv) > 2 else "AS,ASA").split(",")
+# Modus:
+#   full   (standard) – sjekk ALLE AS/ASA. Riktig for den årlige oppdateringen:
+#          nye årsregnskap får ny `id` og legges til som nye rader (upsert), så
+#          historikk akkumuleres. Selskaper som allerede har regnskap sjekkes på
+#          nytt slik at fjorårets nye innlevering fanges opp.
+#   resume – hopp over selskaper som allerede har minst ett regnskap. Raskere når
+#          du bare skal fullføre en avbrutt FØRSTEGANGSLAST (fanger ikke nye år).
+MODE = (sys.argv[3] if len(sys.argv) > 3 else "full").lower()
 
 COLS = [
     ("id","bigint"),("organisasjonsnummer","text"),("journalnr","text"),
@@ -131,11 +140,12 @@ def fetch(orgnr):
 
 def main():
     inn = ",".join(f"'{f.strip()}'" for f in FORMER)
-    print(f"Henter org.numre ({'/'.join(FORMER)}) som mangler regnskap ...", flush=True)
+    skip = ("and not exists (select 1 from brreg.regnskap r "
+            "where r.organisasjonsnummer = brreg.enheter.organisasjonsnummer)"
+            if MODE == "resume" else "")
+    print(f"Henter org.numre ({'/'.join(FORMER)}), modus={MODE} ...", flush=True)
     rows = api(f"select organisasjonsnummer from brreg.enheter "
-               f"where organisasjonsform_kode in ({inn}) "
-               f"and not exists (select 1 from brreg.regnskap r "
-               f"where r.organisasjonsnummer = brreg.enheter.organisasjonsnummer)")
+               f"where organisasjonsform_kode in ({inn}) {skip}")
     orgnumre = [r["organisasjonsnummer"] for r in rows]
     print(f"{len(orgnumre)} org.numre å sjekke. Starter med {WORKERS} parallelle.", flush=True)
     t0 = time.time()
