@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #070b16;
+  --bg2: #0c1426;
+  --panel: rgba(20, 28, 48, 0.6);
+  --panel-solid: #121a2e;
+  --border: rgba(80, 110, 170, 0.18);
+  --text: #eaf0fb;
+  --muted: #8a98b8;
+  --accent: #5b8cff;
+  --accent2: #8a5bff;
+  --pos: #34d399;
+  --neg: #f87171;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background-image:
+    radial-gradient(900px 500px at 12% -8%, rgba(91, 140, 255, 0.16), transparent 60%),
+    radial-gradient(800px 500px at 100% 0%, rgba(138, 91, 255, 0.12), transparent 55%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Glassmorfisk kort */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.card:hover {
+  border-color: rgba(91, 140, 255, 0.35);
+}
+
+.accent-text {
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Stilige faner */
+.tab {
+  position: relative;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--muted);
+  border: 1px solid transparent;
+  transition: all 0.18s ease;
+}
+.tab:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+.tab[data-active="true"] {
+  color: #fff;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  box-shadow: 0 6px 20px rgba(91, 140, 255, 0.35);
+}
+
+.input {
+  width: 100%;
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  font-size: 0.9rem;
+  outline: none;
+  color: var(--text);
+  background: rgba(12, 20, 38, 0.8);
+  border: 1px solid var(--border);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(91, 140, 255, 0.18);
+}
+
+table { border-collapse: collapse; }
+.tabnum { font-variant-numeric: tabular-nums; }
