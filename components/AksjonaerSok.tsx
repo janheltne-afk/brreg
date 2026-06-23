@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import Link from "next/link";
-import { LineChartCard } from "@/components/charts/LineChartCard";
 import { antall, kroner, dato } from "@/lib/format";
 
 type Hist = { orgnr: string; selskap: string; aar: number; antall_aksjer: string; verdi: string | null };
@@ -208,13 +207,6 @@ export function AksjonaerSok() {
 
           {detalj.perAar.length > 0 && (
             <>
-          <LineChartCard
-            title="Antall selskaper eid per år"
-            data={detalj.perAar}
-            xKey="aar"
-            yKey="antall_selskaper"
-          />
-
           <div className="card overflow-x-auto">
             <h3 className="px-4 pt-4 text-sm font-semibold">
               Aksjeposter gjennom årene <span style={{ color: "var(--muted)" }}>(antall aksjer · <span style={{ color: "var(--accent)" }}>ca. verdi</span> der børskurs finnes)</span>
