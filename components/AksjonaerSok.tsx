@@ -6,7 +6,7 @@ import { LineChartCard } from "@/components/charts/LineChartCard";
 import { antall, kroner } from "@/lib/format";
 
 type Hist = { orgnr: string; selskap: string; aar: number; antall_aksjer: string; verdi: string | null };
-type Treff = { navn: string; fodselsaar: string | null };
+type Treff = { navn: string; fodselsaar: string | null; erAksjonaer?: boolean };
 type Skatt = { aar: number; inntekt: string | null; formue: string | null; skatt: string | null; kommune: string | null; rang: number | null };
 type Detalj = {
   navn: string;
@@ -94,7 +94,12 @@ export function AksjonaerSok() {
                   onClick={() => { setQ(t.navn); lastNavn(t.navn, t.fodselsaar); }}
                   className="flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:opacity-80"
                 >
-                  <span>{t.navn}</span>
+                  <span>
+                    {t.navn}
+                    {t.erAksjonaer === false && (
+                      <span className="ml-2 text-xs" style={{ color: "var(--accent2)" }}>skatteliste</span>
+                    )}
+                  </span>
                   <span style={{ color: "var(--muted)" }}>{t.fodselsaar ?? "–"}</span>
                 </button>
               </li>
@@ -105,13 +110,15 @@ export function AksjonaerSok() {
 
       {laster && <p className="text-sm" style={{ color: "var(--muted)" }}>Laster…</p>}
 
-      {detalj && detalj.perAar.length > 0 && (
+      {detalj && (detalj.perAar.length > 0 || (detalj.skatt && detalj.skatt.length > 0)) && (
         <div className="space-y-6">
           <div className="flex flex-wrap items-baseline gap-3">
             <h2 className="text-2xl font-bold">{detalj.navn}</h2>
             <span className="text-sm" style={{ color: "var(--muted)" }}>
-              {detalj.fodselsaar ? `f. ${detalj.fodselsaar} · ` : ""}
-              {selskaper.length} selskap · aktiv {aar[0]}–{aar[aar.length - 1]}
+              {detalj.fodselsaar ? `f. ${detalj.fodselsaar}` : ""}
+              {aar.length > 0
+                ? ` · ${selskaper.length} selskap · aktiv ${aar[0]}–${aar[aar.length - 1]}`
+                : " · kun i skattelista"}
             </span>
           </div>
 
@@ -145,6 +152,8 @@ export function AksjonaerSok() {
             </div>
           )}
 
+          {detalj.perAar.length > 0 && (
+            <>
           <LineChartCard
             title="Antall selskaper eid per år"
             data={detalj.perAar}
@@ -209,6 +218,8 @@ export function AksjonaerSok() {
               </tbody>
             </table>
           </div>
+            </>
+          )}
         </div>
       )}
     </div>
