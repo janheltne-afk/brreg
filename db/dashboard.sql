@@ -78,3 +78,6 @@ FROM brreg.enheter e
 JOIN brreg.regnskap r ON r.organisasjonsnummer = e.organisasjonsnummer
 WHERE e.forr_kommune IS NOT NULL
 GROUP BY e.forr_kommune ORDER BY e.forr_kommune;
+
+-- Personer per kommune (fra skattelistene) – brukes i Investering-fanen.
+CREATE INDEX IF NOT EXISTS ix_skatt_kommune ON brreg.skatteliste (upper(kommune), aar);
