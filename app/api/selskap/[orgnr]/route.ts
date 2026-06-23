@@ -48,8 +48,19 @@ export async function GET(
           order by antall_aksjer desc nulls last limit 20`
       : [];
 
-    return NextResponse.json({ enhet: enhet ?? null, regnskap: regnskap ?? null, perAar, sisteAar, kurs, toppEiere });
+    // Roller (styre, daglig leder m.m.) – kun aktive.
+    const roller = await sql<
+      { rolletype_kode: string; rolletype_beskrivelse: string; person_navn: string | null; person_fodselsdato: string | null; enhet_navn: string | null }[]
+    >`
+      select rolletype_kode, rolletype_beskrivelse, person_navn, person_fodselsdato, enhet_navn
+      from brreg.roller
+      where organisasjonsnummer = ${orgnr} and coalesce(fratraadt, false) = false
+      order by case rolletype_kode
+        when 'INNH' then 0 when 'DAGL' then 1 when 'LEDE' then 2 when 'NEST' then 3
+        when 'MEDL' then 4 when 'VARA' then 5 else 9 end, rekkefolge nulls last`;
+
+    return NextResponse.json({ enhet: enhet ?? null, regnskap: regnskap ?? null, perAar, sisteAar, kurs, toppEiere, roller });
   } catch {
-    return NextResponse.json({ enhet: null, regnskap: null, perAar: [], sisteAar: null, toppEiere: [] });
+    return NextResponse.json({ enhet: null, regnskap: null, perAar: [], sisteAar: null, toppEiere: [], roller: [] });
   }
 }
