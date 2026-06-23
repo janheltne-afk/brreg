@@ -85,9 +85,8 @@ def kandidater(asa_only=False):
     return list(kand.items())
 
 
-def yahoo_search(navn):
-    """Finn .OL-ticker for et selskapsnavn via Yahoos søke-API, med navnesjekk."""
-    sok = re.sub(r"\s+(ASA|AS|SE|ASA\.)\s*$", "", navn).strip() or navn
+def _yahoo_search_q(sok, toks):
+    """Ett søk mot Yahoo – returnerer beste .OL-ticker eller None."""
     url = ("https://query2.finance.yahoo.com/v1/finance/search?q="
            + urllib.parse.quote(sok) + "&quotesCount=12&newsCount=0&listsCount=0")
     d = None
@@ -99,10 +98,9 @@ def yahoo_search(navn):
             time.sleep(2 ** attempt)  # trolig rate-limit (429/403) – vent og prøv igjen
     if d is None:
         return None
-    toks = [t for t in re.findall(r"[A-ZÆØÅ0-9]{4,}", navn.upper())]
-    # Samle alle Oslo Børs-treff (.OL) med navnesjekk, og ranger: høyest score,
-    # deretter korteste symbol (primærtickeren er som regel kortere enn
-    # sekundærlinjer som ender på «O.OL»).
+    # Samle alle Oslo Børs-treff (.OL) med navnesjekk, og ranger korteste symbol
+    # først: primærtickeren (KID.OL, AKVA.OL) er konsekvent kortere enn Yahoos
+    # sekundærlinjer (KIDO.OL, AKVAO.OL). Score som sekundær sortering.
     treff = []
     for qt in d.get("quotes", []):
         sym = qt.get("symbol", "")
@@ -111,15 +109,29 @@ def yahoo_search(navn):
         nm = (str(qt.get("shortname", "")) + " " + str(qt.get("longname", ""))).upper()
         if toks and not any(t in nm for t in toks):
             continue
-        score = qt.get("score", 0) or 0
-        # Korteste symbol først: primærtickeren (f.eks. ACR.OL, AKVA.OL) er
-        # konsekvent kortere enn Yahoos sekundærlinjer (ACRO.OL, AKVAO.OL).
-        # Score som sekundær sortering.
-        treff.append((len(sym), -score, sym))
+        treff.append((len(sym), -(qt.get("score", 0) or 0), sym))
     if not treff:
         return None
     treff.sort()
     return treff[0][2]
+
+
+def yahoo_search(navn):
+    """Finn .OL-ticker. Prøver flere søkevarianter: fullt navn (mest spesifikt –
+    nødvendig for korte/generiske navn som «KID ASA», «VOW ASA»), deretter navn
+    uten selskapssuffiks."""
+    toks = [t for t in re.findall(r"[A-ZÆØÅ0-9]{4,}", navn.upper())]
+    strippet = re.sub(r"\s+(ASA|AS|SE|ASA\.)\s*$", "", navn).strip()
+    varianter = []
+    for v in (navn, strippet):
+        v = v.strip()
+        if v and v not in varianter:
+            varianter.append(v)
+    for sok in varianter:
+        tick = _yahoo_search_q(sok, toks)
+        if tick:
+            return tick
+    return None
 
 
 def yahoo_kurs(ticker):
