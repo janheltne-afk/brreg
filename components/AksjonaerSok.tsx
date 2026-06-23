@@ -5,7 +5,7 @@ import Link from "next/link";
 import { antall, kroner, dato } from "@/lib/format";
 
 type Hist = { orgnr: string; selskap: string; aar: number; antall_aksjer: string; verdi: string | null };
-type Treff = { navn: string; fodselsaar: string | null; erAksjonaer?: boolean; harRolle?: boolean };
+type Treff = { navn: string; fodselsaar: string | null; erAksjonaer?: boolean; harRolle?: boolean; sted?: string | null };
 type Skatt = { aar: number; inntekt: string | null; formue: string | null; skatt: string | null; kommune: string | null; rang: number | null };
 type Rolle = {
   orgnr: string;
@@ -110,7 +110,10 @@ export function AksjonaerSok() {
                       </span>
                     )}
                   </span>
-                  <span style={{ color: "var(--muted)" }}>{t.fodselsaar ?? "–"}</span>
+                  <span className="flex items-center gap-3 whitespace-nowrap" style={{ color: "var(--muted)" }}>
+                    {t.sted && <span className="truncate" style={{ maxWidth: "11rem" }}>{t.sted}</span>}
+                    <span>{t.fodselsaar ?? "–"}</span>
+                  </span>
                 </button>
               </li>
             ))}
