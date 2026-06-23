@@ -17,3 +17,13 @@ hop/seed/*.json
 hop/seed/*.gz
 *.json.gz
 enheter_alle.json.gz
+
+# Next.js / Node (dashboard)
+/node_modules
+/.next
+/out
+.env.local
+.env*.local
+.vercel
+*.tsbuildinfo
+next-env.d.ts
