@@ -17,6 +17,7 @@ type Detalj = {
   perAar: { aar: number; antall_eiere: number; sum_aksjer: string }[];
   sisteAar: number | null;
   kurs: string | null;
+  roller: { rolletype_kode: string; rolletype_beskrivelse: string; person_navn: string | null; person_fodselsdato: string | null; enhet_navn: string | null }[];
   toppEiere: {
     aksjonaer_navn: string;
     fodselsaar_orgnr: string | null;
@@ -126,6 +127,27 @@ export function SelskapSok({ initialOrgnr }: { initialOrgnr?: string }) {
               <Mini k="Driftsresultat" v={kroner(rg.driftsresultat as string, { kompakt: true })} />
               <Mini k="Årsresultat" v={kroner(rg.aarsresultat as string, { kompakt: true })} />
               <Mini k="Egenkapital" v={kroner(rg.sum_egenkapital as string, { kompakt: true })} />
+            </div>
+          )}
+
+          {detalj && detalj.roller && detalj.roller.length > 0 && (
+            <div className="card p-4">
+              <h3 className="mb-3 text-sm font-semibold">Styre og roller</h3>
+              <div className="grid grid-cols-1 gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
+                {detalj.roller.map((r, i) => (
+                  <div key={i} className="flex items-center justify-between gap-3 border-b pb-1.5" style={{ borderColor: "var(--border)" }}>
+                    <span style={{ color: "var(--muted)" }}>{r.rolletype_beskrivelse}</span>
+                    <span className="text-right font-medium">
+                      {r.person_navn ?? r.enhet_navn ?? "–"}
+                      {r.person_fodselsdato && (
+                        <span className="ml-1 font-normal" style={{ color: "var(--muted)" }}>
+                          ({String(r.person_fodselsdato).slice(0, 4)})
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
