@@ -2,6 +2,7 @@ import { sql } from "@/lib/db";
 import { KpiCard } from "@/components/KpiCard";
 import { BarChartCard } from "@/components/charts/BarChartCard";
 import { LineChartCard } from "@/components/charts/LineChartCard";
+import { Melding } from "@/components/Melding";
 import { antall, kroner } from "@/lib/format";
 
 export const dynamic = "force-dynamic"; // rendres per forespørsel (queryer DB)
@@ -17,13 +18,24 @@ type Kpi = {
 };
 
 export default async function OversiktPage() {
-  const [kpi] = await sql<Kpi[]>`select * from brreg.mv_kpi`;
-  const orgForm = await sql<{ beskrivelse: string; antall: number }[]>`
-    select beskrivelse, antall from brreg.mv_org_form order by antall desc limit 8`;
-  const naering = await sql<{ naering: string; antall: number }[]>`
-    select naering, antall from brreg.mv_naering order by antall desc limit 12`;
-  const perAar = await sql<{ aar: number; antall: number }[]>`
-    select aar, antall from brreg.dash_aksjeposter_per_aar order by aar`;
+  let kpi: Kpi;
+  let orgForm: { beskrivelse: string; antall: number }[];
+  let naering: { naering: string; antall: number }[];
+  let perAar: { aar: number; antall: number }[];
+
+  try {
+    [kpi] = await sql<Kpi[]>`select * from brreg.mv_kpi`;
+    orgForm = await sql`select beskrivelse, antall from brreg.mv_org_form order by antall desc limit 8`;
+    naering = await sql`select naering, antall from brreg.mv_naering order by antall desc limit 12`;
+    perAar = await sql`select aar, antall from brreg.dash_aksjeposter_per_aar order by aar`;
+  } catch {
+    return (
+      <Melding
+        tittel="Databasen er ikke koblet til ennå"
+        tekst="Sett miljøvariabelen DATABASE_URL i Vercel (Settings → Environment Variables) og redeploy, så lastes dashboardet."
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

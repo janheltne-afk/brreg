@@ -1,5 +1,6 @@
 import { sql } from "@/lib/db";
 import { kroner, dato } from "@/lib/format";
+import { Melding } from "@/components/Melding";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -16,12 +17,22 @@ type Rad = {
 };
 
 export default async function RegnskapPage() {
-  const rader = await sql<Rad[]>`
-    select organisasjonsnummer, navn, forr_poststed, regnskapsperiode_til,
-           sum_driftsinntekter, driftsresultat, aarsresultat, sum_egenkapital
-    from brreg.mv_topp_inntekt
-    order by sum_driftsinntekter desc
-    limit 50`;
+  let rader: Rad[];
+  try {
+    rader = await sql<Rad[]>`
+      select organisasjonsnummer, navn, forr_poststed, regnskapsperiode_til,
+             sum_driftsinntekter, driftsresultat, aarsresultat, sum_egenkapital
+      from brreg.mv_topp_inntekt
+      order by sum_driftsinntekter desc
+      limit 50`;
+  } catch {
+    return (
+      <Melding
+        tittel="Databasen er ikke koblet til ennå"
+        tekst="Sett miljøvariabelen DATABASE_URL i Vercel (Settings → Environment Variables) og redeploy."
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
