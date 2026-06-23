@@ -3,9 +3,9 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { LineChartCard } from "@/components/charts/LineChartCard";
-import { antall } from "@/lib/format";
+import { antall, kroner } from "@/lib/format";
 
-type Hist = { orgnr: string; selskap: string; aar: number; antall_aksjer: string };
+type Hist = { orgnr: string; selskap: string; aar: number; antall_aksjer: string; verdi: string | null };
 type Treff = { navn: string; fodselsaar: string | null };
 type Detalj = {
   navn: string;
@@ -46,16 +46,16 @@ export function AksjonaerSok() {
     }, 250);
   }, [q]);
 
-  // Pivot historikk → matrise (selskap × år).
+  // Pivot historikk → matrise (selskap × år), med antall + verdi per celle.
   const { aar, selskaper, celle } = useMemo(() => {
     const h = detalj?.historikk ?? [];
     const aarSet = new Set<number>();
     const selskapMap = new Map<string, string>();
-    const celle = new Map<string, string>();
+    const celle = new Map<string, { antall: string; verdi: string | null }>();
     for (const r of h) {
       aarSet.add(r.aar);
       selskapMap.set(r.orgnr, r.selskap);
-      celle.set(`${r.orgnr}|${r.aar}`, r.antall_aksjer);
+      celle.set(`${r.orgnr}|${r.aar}`, { antall: r.antall_aksjer, verdi: r.verdi });
     }
     const aar = [...aarSet].sort((a, b) => a - b);
     // Sorter selskaper etter siste kjente beholdning (størst først).
@@ -63,8 +63,8 @@ export function AksjonaerSok() {
       .map(([orgnr, selskap]) => {
         let sist = 0;
         for (let i = aar.length - 1; i >= 0; i--) {
-          const v = celle.get(`${orgnr}|${aar[i]}`);
-          if (v != null) { sist = Number(v); break; }
+          const c = celle.get(`${orgnr}|${aar[i]}`);
+          if (c != null) { sist = Number(c.antall); break; }
         }
         return { orgnr, selskap, sist };
       })
@@ -122,7 +122,7 @@ export function AksjonaerSok() {
 
           <div className="card overflow-x-auto">
             <h3 className="px-4 pt-4 text-sm font-semibold">
-              Aksjeposter gjennom årene <span style={{ color: "var(--muted)" }}>(antall aksjer per selskap per år)</span>
+              Aksjeposter gjennom årene <span style={{ color: "var(--muted)" }}>(antall aksjer · <span style={{ color: "var(--accent)" }}>ca. verdi</span> der børskurs finnes)</span>
             </h3>
             <table className="mt-3 w-full text-sm tabnum">
               <thead>
@@ -150,14 +150,25 @@ export function AksjonaerSok() {
                       </Link>
                     </td>
                     {aar.map((a) => {
-                      const v = celle.get(`${s.orgnr}|${a}`);
+                      const c = celle.get(`${s.orgnr}|${a}`);
                       return (
                         <td
                           key={a}
-                          className="px-3 py-2 text-right"
-                          style={{ color: v == null ? "var(--border)" : "var(--text)" }}
+                          className="px-3 py-2 text-right align-top"
+                          style={{ color: c == null ? "var(--border)" : "var(--text)" }}
                         >
-                          {v == null ? "·" : antall(v)}
+                          {c == null ? (
+                            "·"
+                          ) : (
+                            <>
+                              <div>{antall(c.antall)}</div>
+                              {c.verdi && (
+                                <div className="text-xs" style={{ color: "var(--accent)" }}>
+                                  {kroner(c.verdi, { kompakt: true })}
+                                </div>
+                              )}
+                            </>
+                          )}
                         </td>
                       );
                     })}

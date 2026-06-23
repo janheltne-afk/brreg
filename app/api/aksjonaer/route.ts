@@ -21,12 +21,16 @@ export async function GET(req: NextRequest) {
       group by aar order by aar`;
 
     const historikk = await sql<
-      { orgnr: string; selskap: string; aar: number; antall_aksjer: string }[]
+      { orgnr: string; selskap: string; aar: number; antall_aksjer: string; verdi: string | null }[]
     >`
-      select orgnr, max(selskap) as selskap, aar, sum(antall_aksjer)::bigint as antall_aksjer
-      from brreg.aksjonaerer where ${filter}
-      group by orgnr, aar
-      order by orgnr, aar
+      select a.orgnr, max(a.selskap) as selskap, a.aar,
+             sum(a.antall_aksjer)::bigint as antall_aksjer,
+             case when k.kurs is not null then (sum(a.antall_aksjer) * k.kurs)::numeric end as verdi
+      from brreg.aksjonaerer a
+      left join brreg.aksjekurs k on k.orgnr = a.orgnr and k.aar = a.aar
+      where ${filter}
+      group by a.orgnr, a.aar, k.kurs
+      order by a.orgnr, a.aar
       limit 4000`;
 
     return NextResponse.json({ navn, fodselsaar, perAar, historikk });
