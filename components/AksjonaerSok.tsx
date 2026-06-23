@@ -3,17 +3,26 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { LineChartCard } from "@/components/charts/LineChartCard";
-import { antall, kroner } from "@/lib/format";
+import { antall, kroner, dato } from "@/lib/format";
 
 type Hist = { orgnr: string; selskap: string; aar: number; antall_aksjer: string; verdi: string | null };
-type Treff = { navn: string; fodselsaar: string | null; erAksjonaer?: boolean };
+type Treff = { navn: string; fodselsaar: string | null; erAksjonaer?: boolean; harRolle?: boolean };
 type Skatt = { aar: number; inntekt: string | null; formue: string | null; skatt: string | null; kommune: string | null; rang: number | null };
+type Rolle = {
+  orgnr: string;
+  selskap: string | null;
+  rolletype_kode: string;
+  rolletype_beskrivelse: string;
+  fratraadt: boolean | null;
+  sist_endret: string | null;
+};
 type Detalj = {
   navn: string;
   fodselsaar: string | null;
   perAar: { aar: number; antall_selskaper: number; sum_aksjer: string }[];
   historikk: Hist[];
   skatt: Skatt[];
+  roller: Rolle[];
 };
 
 export function AksjonaerSok() {
@@ -97,7 +106,9 @@ export function AksjonaerSok() {
                   <span>
                     {t.navn}
                     {t.erAksjonaer === false && (
-                      <span className="ml-2 text-xs" style={{ color: "var(--accent2)" }}>skatteliste</span>
+                      <span className="ml-2 text-xs" style={{ color: "var(--accent2)" }}>
+                        {t.harRolle ? "styreverv" : "skatteliste"}
+                      </span>
                     )}
                   </span>
                   <span style={{ color: "var(--muted)" }}>{t.fodselsaar ?? "–"}</span>
@@ -110,7 +121,7 @@ export function AksjonaerSok() {
 
       {laster && <p className="text-sm" style={{ color: "var(--muted)" }}>Laster…</p>}
 
-      {detalj && (detalj.perAar.length > 0 || (detalj.skatt && detalj.skatt.length > 0)) && (
+      {detalj && (detalj.perAar.length > 0 || (detalj.skatt && detalj.skatt.length > 0) || (detalj.roller && detalj.roller.length > 0)) && (
         <div className="space-y-6">
           <div className="flex flex-wrap items-baseline gap-3">
             <h2 className="text-2xl font-bold">{detalj.navn}</h2>
@@ -118,9 +129,52 @@ export function AksjonaerSok() {
               {detalj.fodselsaar ? `f. ${detalj.fodselsaar}` : ""}
               {aar.length > 0
                 ? ` · ${selskaper.length} selskap · aktiv ${aar[0]}–${aar[aar.length - 1]}`
+                : detalj.roller && detalj.roller.length > 0
+                ? ` · ${detalj.roller.filter((r) => !r.fratraadt).length} aktive verv`
                 : " · kun i skattelista"}
             </span>
           </div>
+
+          {detalj.roller && detalj.roller.length > 0 && (
+            <div className="card overflow-x-auto">
+              <h3 className="px-4 pt-4 text-sm font-semibold">
+                Styreverv og roller{" "}
+                <span style={{ color: "var(--muted)" }}>(selskap, rolle og når det sist ble registrert)</span>
+              </h3>
+              <table className="mt-2 w-full text-sm">
+                <thead>
+                  <tr className="text-left" style={{ color: "var(--muted)" }}>
+                    <th className="px-4 py-2 font-medium">Selskap</th>
+                    <th className="px-4 py-2 font-medium">Rolle</th>
+                    <th className="px-4 py-2 font-medium">Status</th>
+                    <th className="px-4 py-2 text-right font-medium">Sist endret</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detalj.roller.map((r, i) => (
+                    <tr key={`${r.orgnr}|${r.rolletype_kode}|${i}`} className="border-t" style={{ borderColor: "var(--border)" }}>
+                      <td className="px-4 py-2 font-medium">
+                        <Link href={`/selskaper?orgnr=${r.orgnr}`} className="hover:underline">
+                          {r.selskap ?? r.orgnr}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-2">{r.rolletype_beskrivelse}</td>
+                      <td className="px-4 py-2">
+                        {r.fratraadt ? (
+                          <span style={{ color: "var(--muted)" }}>Fratrådt</span>
+                        ) : (
+                          <span style={{ color: "var(--accent)" }}>Aktiv</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2 text-right tabnum" style={{ color: "var(--muted)" }}>
+                        {dato(r.sist_endret)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           {detalj.skatt && detalj.skatt.length > 0 && (
             <div className="card overflow-x-auto">

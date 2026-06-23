@@ -21,6 +21,12 @@ CREATE TABLE IF NOT EXISTS brreg.roller (
 CREATE INDEX IF NOT EXISTS ix_roller_orgnr  ON brreg.roller (organisasjonsnummer);
 CREATE INDEX IF NOT EXISTS ix_roller_person ON brreg.roller (upper(person_navn));
 
+-- Personer med styreverv legges også inn i søke-tabellen brreg.sok_navn
+-- (med har_rolle=true), slik at de dukker opp i navnesøket selv om de verken
+-- er aksjonær eller på skattelista. Fylles av tools/load-sok-roller.py (full)
+-- og holdes oppdatert av tools/load-roller-delta.py (daglig).
+ALTER TABLE brreg.sok_navn ADD COLUMN IF NOT EXISTS har_rolle BOOLEAN NOT NULL DEFAULT false;
+
 -- Vannmerke for delta-jobben: siste behandlede oppdaterings-id fra
 -- /api/oppdateringer/roller?afterId=... lagres i brreg.sync_status.
 CREATE TABLE IF NOT EXISTS brreg.sync_status (
