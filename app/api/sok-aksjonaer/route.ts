@@ -13,9 +13,9 @@ export async function GET(req: NextRequest) {
 
   try {
     const rader = await sql<
-      { navn: string; fodselsaar: string | null; er_aksjonaer: boolean; har_rolle: boolean }[]
+      { navn: string; fodselsaar: string | null; er_aksjonaer: boolean; har_rolle: boolean; sted: string | null }[]
     >`
-      select navn, fodselsaar, er_aksjonaer, har_rolle
+      select navn, fodselsaar, er_aksjonaer, har_rolle, sted
       from brreg.sok_navn
       where navn like ${"%" + term + "%"}
       order by (navn like ${term + "%"}) desc, navn, fodselsaar
@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
         fodselsaar: r.fodselsaar,
         erAksjonaer: r.er_aksjonaer,
         harRolle: r.har_rolle,
+        sted: r.sted,
       })),
     });
   } catch {
