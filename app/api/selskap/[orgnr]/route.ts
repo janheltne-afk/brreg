@@ -48,6 +48,36 @@ export async function GET(
           order by antall_aksjer desc nulls last limit 20`
       : [];
 
+    // Eierskap gjennom årene: de 25 største eierne (siste år) sin beholdning per
+    // år, med verdi der børskurs finnes. Samme innsikt som personvisningen,
+    // men sett fra selskapet. Hoppes over for svært store selskaper (mange
+    // tusen eiere) der spørringen blir treg – de har uansett topp-eier-tabellen.
+    const maksEiere = perAar.reduce((m, r) => Math.max(m, r.antall_eiere), 0);
+    const eierHistorikk = sisteAar && maksEiere <= 5000
+      ? await sql<
+          { aksjonaer_navn: string; fodselsaar_orgnr: string | null; aar: number; antall: string; verdi: string | null }[]
+        >`
+          with eiere as (
+            select aksjonaer_navn, fodselsaar_orgnr,
+                   sum(antall_aksjer) filter (where aar = ${sisteAar}) as sist
+            from brreg.aksjonaerer
+            where orgnr = ${orgnr}
+            group by aksjonaer_navn, fodselsaar_orgnr
+            order by sist desc nulls last
+            limit 25
+          )
+          select a.aksjonaer_navn, a.fodselsaar_orgnr, a.aar,
+                 sum(a.antall_aksjer)::bigint as antall,
+                 case when k.kurs is not null then (sum(a.antall_aksjer) * k.kurs)::numeric end as verdi
+          from brreg.aksjonaerer a
+          join eiere e on e.aksjonaer_navn = a.aksjonaer_navn
+                      and e.fodselsaar_orgnr is not distinct from a.fodselsaar_orgnr
+          left join brreg.aksjekurs k on k.orgnr = a.orgnr and k.aar = a.aar
+          where a.orgnr = ${orgnr}
+          group by a.aksjonaer_navn, a.fodselsaar_orgnr, a.aar, k.kurs
+          order by a.aar`
+      : [];
+
     // Roller (styre, daglig leder m.m.) – kun aktive.
     const roller = await sql<
       { rolletype_kode: string; rolletype_beskrivelse: string; person_navn: string | null; person_fodselsdato: string | null; enhet_navn: string | null }[]
@@ -59,8 +89,9 @@ export async function GET(
         when 'INNH' then 0 when 'DAGL' then 1 when 'LEDE' then 2 when 'NEST' then 3
         when 'MEDL' then 4 when 'VARA' then 5 else 9 end, rekkefolge nulls last`;
 
-    return NextResponse.json({ enhet: enhet ?? null, regnskap: regnskap ?? null, perAar, sisteAar, kurs, toppEiere, roller });
+    const eierHistorikkStor = Boolean(sisteAar && maksEiere > 5000);
+    return NextResponse.json({ enhet: enhet ?? null, regnskap: regnskap ?? null, perAar, sisteAar, kurs, toppEiere, eierHistorikk, eierHistorikkStor, roller });
   } catch {
-    return NextResponse.json({ enhet: null, regnskap: null, perAar: [], sisteAar: null, toppEiere: [], roller: [] });
+    return NextResponse.json({ enhet: null, regnskap: null, perAar: [], sisteAar: null, toppEiere: [], eierHistorikk: [], eierHistorikkStor: false, roller: [] });
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { LineChartCard } from "@/components/charts/LineChartCard";
 import { antall, kroner, dato } from "@/lib/format";
 
@@ -26,6 +26,14 @@ type Detalj = {
     antall_aksjer: string | null;
     verdi: string | null;
   }[];
+  eierHistorikk: {
+    aksjonaer_navn: string;
+    fodselsaar_orgnr: string | null;
+    aar: number;
+    antall: string;
+    verdi: string | null;
+  }[];
+  eierHistorikkStor?: boolean;
 };
 
 export function SelskapSok({ initialOrgnr }: { initialOrgnr?: string }) {
@@ -65,6 +73,33 @@ export function SelskapSok({ initialOrgnr }: { initialOrgnr?: string }) {
 
   const e = detalj?.enhet as Record<string, unknown> | null;
   const rg = detalj?.regnskap as Record<string, unknown> | null;
+
+  // Pivot eierhistorikk → matrise (eier × år), antall + verdi per celle.
+  const { eierAar, eiere, eierCelle } = useMemo(() => {
+    const h = detalj?.eierHistorikk ?? [];
+    const aarSet = new Set<number>();
+    const eierMap = new Map<string, { navn: string; fodsel: string | null }>();
+    const celle = new Map<string, { antall: string; verdi: string | null }>();
+    for (const r of h) {
+      const key = `${r.aksjonaer_navn}|${r.fodselsaar_orgnr ?? ""}`;
+      aarSet.add(r.aar);
+      eierMap.set(key, { navn: r.aksjonaer_navn, fodsel: r.fodselsaar_orgnr });
+      celle.set(`${key}|${r.aar}`, { antall: r.antall, verdi: r.verdi });
+    }
+    const eierAar = [...aarSet].sort((a, b) => a - b);
+    // Sorter eiere etter siste kjente beholdning (størst først).
+    const eiere = [...eierMap.entries()]
+      .map(([key, v]) => {
+        let sist = 0;
+        for (let i = eierAar.length - 1; i >= 0; i--) {
+          const c = celle.get(`${key}|${eierAar[i]}`);
+          if (c != null) { sist = Number(c.antall); break; }
+        }
+        return { key, ...v, sist };
+      })
+      .sort((a, b) => b.sist - a.sist);
+    return { eierAar, eiere, eierCelle: celle };
+  }, [detalj]);
 
   return (
     <div className="space-y-5">
@@ -195,6 +230,79 @@ export function SelskapSok({ initialOrgnr }: { initialOrgnr?: string }) {
                 </tbody>
               </table>
             </div>
+          )}
+
+          {eiere.length > 0 && eierAar.length > 1 && (
+            <div className="card overflow-x-auto">
+              <h3 className="px-4 pt-4 text-sm font-semibold">
+                Eierskap gjennom årene{" "}
+                <span style={{ color: "var(--muted)" }}>
+                  (antall aksjer · <span style={{ color: "var(--accent)" }}>ca. verdi</span> der børskurs finnes)
+                </span>
+              </h3>
+              <table className="mt-3 w-full text-sm tabnum">
+                <thead>
+                  <tr style={{ color: "var(--muted)" }}>
+                    <th
+                      className="sticky left-0 px-4 py-2 text-left font-medium"
+                      style={{ background: "var(--panel-solid)" }}
+                    >
+                      Eier
+                    </th>
+                    {eierAar.map((a) => (
+                      <th key={a} className="px-3 py-2 text-right font-medium">{a}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {eiere.map((o) => (
+                    <tr key={o.key} className="border-t" style={{ borderColor: "var(--border)" }}>
+                      <td
+                        className="sticky left-0 px-4 py-2 font-medium"
+                        style={{ background: "var(--panel-solid)" }}
+                      >
+                        {o.navn}
+                        {o.fodsel && (
+                          <span className="ml-1 text-xs font-normal" style={{ color: "var(--muted)" }}>
+                            {o.fodsel}
+                          </span>
+                        )}
+                      </td>
+                      {eierAar.map((a) => {
+                        const c = eierCelle.get(`${o.key}|${a}`);
+                        return (
+                          <td
+                            key={a}
+                            className="px-3 py-2 text-right align-top"
+                            style={{ color: c == null ? "var(--border)" : "var(--text)" }}
+                          >
+                            {c == null ? (
+                              "·"
+                            ) : (
+                              <>
+                                <div>{antall(c.antall)}</div>
+                                {c.verdi && (
+                                  <div className="text-xs" style={{ color: "var(--accent)" }}>
+                                    {kroner(c.verdi, { kompakt: true })}
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {detalj && detalj.eierHistorikkStor && (
+            <p className="text-sm" style={{ color: "var(--muted)" }}>
+              Eierskap gjennom årene vises ikke for svært store selskaper (mange tusen
+              aksjeeiere). Tabellen over viser de største eierne for {detalj.sisteAar}.
+            </p>
           )}
         </div>
       )}
