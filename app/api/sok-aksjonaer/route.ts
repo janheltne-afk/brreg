@@ -3,19 +3,22 @@ import { sql } from "@/lib/db";
 
 export const runtime = "nodejs";
 
-// Distinkte eier-navn på prefiks (bruker text_pattern_ops-indeksen).
+// Distinkte (navn, fødselsår/orgnr) på prefiks – skiller navnesøsken.
 export async function GET(req: NextRequest) {
   const q = (req.nextUrl.searchParams.get("q") ?? "").trim();
   if (q.length < 3) return NextResponse.json({ treff: [] });
 
   try {
-    const navn = await sql<{ aksjonaer_navn: string }[]>`
-      select distinct aksjonaer_navn
+    const rader = await sql<{ aksjonaer_navn: string; fodselsaar_orgnr: string | null }[]>`
+      select aksjonaer_navn, fodselsaar_orgnr
       from brreg.aksjonaerer
       where aksjonaer_navn like ${q.toUpperCase() + "%"}
-      order by aksjonaer_navn
-      limit 15`;
-    return NextResponse.json({ treff: navn.map((n) => n.aksjonaer_navn) });
+      group by aksjonaer_navn, fodselsaar_orgnr
+      order by aksjonaer_navn, fodselsaar_orgnr
+      limit 25`;
+    return NextResponse.json({
+      treff: rader.map((r) => ({ navn: r.aksjonaer_navn, fodselsaar: r.fodselsaar_orgnr })),
+    });
   } catch {
     return NextResponse.json({ treff: [] });
   }

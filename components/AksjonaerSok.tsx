@@ -6,24 +6,27 @@ import { LineChartCard } from "@/components/charts/LineChartCard";
 import { antall } from "@/lib/format";
 
 type Hist = { orgnr: string; selskap: string; aar: number; antall_aksjer: string };
+type Treff = { navn: string; fodselsaar: string | null };
 type Detalj = {
   navn: string;
+  fodselsaar: string | null;
   perAar: { aar: number; antall_selskaper: number; sum_aksjer: string }[];
   historikk: Hist[];
 };
 
 export function AksjonaerSok() {
   const [q, setQ] = useState("");
-  const [treff, setTreff] = useState<string[]>([]);
+  const [treff, setTreff] = useState<Treff[]>([]);
   const [detalj, setDetalj] = useState<Detalj | null>(null);
   const [laster, setLaster] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const lastNavn = useCallback(async (navn: string) => {
+  const lastNavn = useCallback(async (navn: string, fodselsaar: string | null) => {
     setLaster(true);
     setTreff([]);
     try {
-      const r = await fetch(`/api/aksjonaer?navn=${encodeURIComponent(navn)}`);
+      const r = await fetch(
+        `/api/aksjonaer?navn=${encodeURIComponent(navn)}&fodselsaar=${encodeURIComponent(fodselsaar ?? "")}`);
       setDetalj(await r.json());
     } finally {
       setLaster(false);
@@ -83,13 +86,14 @@ export function AksjonaerSok() {
             className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl"
             style={{ background: "var(--panel-solid)", border: "1px solid var(--border)" }}
           >
-            {treff.map((navn) => (
-              <li key={navn}>
+            {treff.map((t, i) => (
+              <li key={`${t.navn}|${t.fodselsaar}|${i}`}>
                 <button
-                  onClick={() => { setQ(navn); lastNavn(navn); }}
-                  className="w-full px-4 py-2 text-left text-sm hover:opacity-80"
+                  onClick={() => { setQ(t.navn); lastNavn(t.navn, t.fodselsaar); }}
+                  className="flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:opacity-80"
                 >
-                  {navn}
+                  <span>{t.navn}</span>
+                  <span style={{ color: "var(--muted)" }}>{t.fodselsaar ?? "–"}</span>
                 </button>
               </li>
             ))}
@@ -104,6 +108,7 @@ export function AksjonaerSok() {
           <div className="flex flex-wrap items-baseline gap-3">
             <h2 className="text-2xl font-bold">{detalj.navn}</h2>
             <span className="text-sm" style={{ color: "var(--muted)" }}>
+              {detalj.fodselsaar ? `f. ${detalj.fodselsaar} · ` : ""}
               {selskaper.length} selskap · aktiv {aar[0]}–{aar[aar.length - 1]}
             </span>
           </div>
