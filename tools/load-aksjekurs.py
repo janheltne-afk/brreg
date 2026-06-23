@@ -89,7 +89,7 @@ def yahoo_search(navn):
     """Finn .OL-ticker for et selskapsnavn via Yahoos søke-API, med navnesjekk."""
     sok = re.sub(r"\s+(ASA|AS|SE|ASA\.)\s*$", "", navn).strip() or navn
     url = ("https://query2.finance.yahoo.com/v1/finance/search?q="
-           + urllib.parse.quote(sok) + "&quotesCount=8&newsCount=0&listsCount=0")
+           + urllib.parse.quote(sok) + "&quotesCount=12&newsCount=0&listsCount=0")
     d = None
     for attempt in range(4):
         out = curl(["-H", "User-Agent: Mozilla/5.0", "-H", "Accept: */*", url], timeout=20)
@@ -100,13 +100,26 @@ def yahoo_search(navn):
     if d is None:
         return None
     toks = [t for t in re.findall(r"[A-ZÆØÅ0-9]{4,}", navn.upper())]
+    # Samle alle Oslo Børs-treff (.OL) med navnesjekk, og ranger: høyest score,
+    # deretter korteste symbol (primærtickeren er som regel kortere enn
+    # sekundærlinjer som ender på «O.OL»).
+    treff = []
     for qt in d.get("quotes", []):
         sym = qt.get("symbol", "")
-        if sym.endswith(".OL"):
-            nm = (str(qt.get("shortname", "")) + " " + str(qt.get("longname", ""))).upper()
-            if not toks or any(t in nm for t in toks):
-                return sym
-    return None
+        if not sym.endswith(".OL"):
+            continue
+        nm = (str(qt.get("shortname", "")) + " " + str(qt.get("longname", ""))).upper()
+        if toks and not any(t in nm for t in toks):
+            continue
+        score = qt.get("score", 0) or 0
+        # Korteste symbol først: primærtickeren (f.eks. ACR.OL, AKVA.OL) er
+        # konsekvent kortere enn Yahoos sekundærlinjer (ACRO.OL, AKVAO.OL).
+        # Score som sekundær sortering.
+        treff.append((len(sym), -score, sym))
+    if not treff:
+        return None
+    treff.sort()
+    return treff[0][2]
 
 
 def yahoo_kurs(ticker):
@@ -114,9 +127,22 @@ def yahoo_kurs(ticker):
     p2 = int(datetime.datetime(TIL, 12, 31).timestamp())
     url = (f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
            f"?period1={p1}&period2={p2}&interval=1d")
-    out = curl(["-H", "User-Agent: Mozilla/5.0", url], timeout=30)
-    d = json.loads(out)
-    res = d["chart"]["result"][0]
+    # Tål rate-limiting (tom/ugyldig respons) med backoff, og null-resultat.
+    res = None
+    for attempt in range(5):
+        out = curl(["-H", "User-Agent: Mozilla/5.0", url], timeout=30)
+        try:
+            d = json.loads(out)
+        except json.JSONDecodeError:
+            time.sleep(2 ** attempt); continue
+        chart = d.get("chart") or {}
+        result = chart.get("result")
+        if result:
+            res = result[0]; break
+        # error/null (ukjent ticker eller rate-limit) – vent litt og prøv igjen
+        time.sleep(2 ** attempt)
+    if res is None:
+        return None, {}
     cur = res["meta"].get("currency", "NOK")
     ts = res.get("timestamp", []) or []
     quote = res["indicators"]["quote"][0]
@@ -167,6 +193,13 @@ def main():
             if not ticker:
                 continue
             cur, per_year = yahoo_kurs(ticker)
+            # Yahoos «…O.OL»-linjer er ofte tomme duplikater (f.eks. AUSSO.OL),
+            # mens den ekte tickeren mangler «O» (AUSS.OL). Prøv den som fallback.
+            if not per_year and re.match(r"^[A-Z0-9]+O\.OL$", ticker):
+                alt_ticker = ticker[:-4] + ".OL"  # fjern O før .OL
+                cur2, per_year2 = yahoo_kurs(alt_ticker)
+                if per_year2:
+                    ticker, cur, per_year = alt_ticker, cur2, per_year2
             if not per_year:
                 continue
             notert.append((orgnr, ticker, navn))
@@ -183,7 +216,7 @@ def main():
         if idx % 25 == 0 and notert:
             upsert_notert(notert); upsert_kurs(kurs_rader)
             notert, kurs_rader = [], []
-        time.sleep(0.35)
+        time.sleep(1.5)  # rolig takt mot Yahoo for å unngå rate-limiting
 
     upsert_notert(notert)
     upsert_kurs(kurs_rader)
