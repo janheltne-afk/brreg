@@ -33,8 +33,17 @@ export async function GET(req: NextRequest) {
       order by a.orgnr, a.aar
       limit 4000`;
 
-    return NextResponse.json({ navn, fodselsaar, perAar, historikk });
+    // Skatteliste (offentlig): inntekt/formue/skatt per år, koblet på navn + fødselsår.
+    const skatt = /^\d{4}$/.test(fodselsaar)
+      ? await sql<{ aar: number; inntekt: string; formue: string; skatt: string; kommune: string; rang: number }[]>`
+          select aar, inntekt, formue, skatt, kommune, rang
+          from brreg.skatteliste
+          where navn_upper = ${navn} and fodselsaar = ${Number(fodselsaar)}
+          order by aar`
+      : [];
+
+    return NextResponse.json({ navn, fodselsaar, perAar, historikk, skatt });
   } catch {
-    return NextResponse.json({ navn, fodselsaar, perAar: [], historikk: [] });
+    return NextResponse.json({ navn, fodselsaar, perAar: [], historikk: [], skatt: [] });
   }
 }

@@ -7,11 +7,13 @@ import { antall, kroner } from "@/lib/format";
 
 type Hist = { orgnr: string; selskap: string; aar: number; antall_aksjer: string; verdi: string | null };
 type Treff = { navn: string; fodselsaar: string | null };
+type Skatt = { aar: number; inntekt: string | null; formue: string | null; skatt: string | null; kommune: string | null; rang: number | null };
 type Detalj = {
   navn: string;
   fodselsaar: string | null;
   perAar: { aar: number; antall_selskaper: number; sum_aksjer: string }[];
   historikk: Hist[];
+  skatt: Skatt[];
 };
 
 export function AksjonaerSok() {
@@ -112,6 +114,36 @@ export function AksjonaerSok() {
               {selskaper.length} selskap · aktiv {aar[0]}–{aar[aar.length - 1]}
             </span>
           </div>
+
+          {detalj.skatt && detalj.skatt.length > 0 && (
+            <div className="card overflow-x-auto">
+              <h3 className="px-4 pt-4 text-sm font-semibold">
+                Skatteliste <span style={{ color: "var(--muted)" }}>(offentlig: inntekt, formue, skatt per år)</span>
+              </h3>
+              <table className="mt-2 w-full text-sm tabnum">
+                <thead>
+                  <tr className="text-left" style={{ color: "var(--muted)" }}>
+                    <th className="px-4 py-2 font-medium">År</th>
+                    <th className="px-4 py-2 font-medium">Kommune</th>
+                    <th className="px-4 py-2 text-right font-medium">Inntekt</th>
+                    <th className="px-4 py-2 text-right font-medium">Formue</th>
+                    <th className="px-4 py-2 text-right font-medium">Skatt</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detalj.skatt.map((s) => (
+                    <tr key={s.aar} className="border-t" style={{ borderColor: "var(--border)" }}>
+                      <td className="px-4 py-2">{s.aar}</td>
+                      <td className="px-4 py-2" style={{ color: "var(--muted)" }}>{s.kommune ?? "–"}</td>
+                      <td className="px-4 py-2 text-right">{kroner(s.inntekt, { kompakt: true })}</td>
+                      <td className="px-4 py-2 text-right font-medium">{kroner(s.formue, { kompakt: true })}</td>
+                      <td className="px-4 py-2 text-right">{kroner(s.skatt, { kompakt: true })}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           <LineChartCard
             title="Antall selskaper eid per år"
