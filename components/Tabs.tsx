@@ -10,7 +10,7 @@ export function Tabs() {
     <nav className="flex flex-wrap gap-1.5">
       {tabs.map((t) => {
         const href = `/${t.slug}`;
-        const active = pathname === href || (pathname === "/" && t.slug === "oversikt");
+        const active = pathname === href || (pathname === "/" && t.slug === "selskaper");
         return (
           <Link key={t.slug} href={href} title={t.beskrivelse} className="tab" data-active={active}>
             {t.navn}
