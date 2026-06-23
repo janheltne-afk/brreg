@@ -18,9 +18,11 @@ import os, sys, re, json, time, datetime, subprocess, urllib.parse
 REF = os.environ["SUPABASE_PROJECT_REF"]
 TOK = os.environ["SUPABASE_ACCESS_TOKEN"]
 QURL = f"https://api.supabase.com/v1/projects/{REF}/database/query"
-FRA = int(sys.argv[1]) if len(sys.argv) > 1 else 2005
-TIL = int(sys.argv[2]) if len(sys.argv) > 2 else datetime.date.today().year
-MIN_EIERE = int(sys.argv[3]) if len(sys.argv) > 3 else 150
+# Posisjonsargumenter (uten flagg som --asa-only/--force): fra_aar, til_aar, min_eiere.
+POS = [a for a in sys.argv[1:] if not a.startswith("-")]
+FRA = int(POS[0]) if len(POS) > 0 else 2005
+TIL = int(POS[1]) if len(POS) > 1 else datetime.date.today().year
+MIN_EIERE = int(POS[2]) if len(POS) > 2 else 150
 
 
 def curl(args, timeout=40):
@@ -51,13 +53,16 @@ def q(s):
     return s.replace("'", "''")
 
 
-def kandidater():
+def kandidater(asa_only=False):
     """Kandidater for børsnotering, fra flere kilder slått sammen:
 
     1. Alle ASA-selskaper i Enhetsregisteret (børsnotering forutsetter normalt
        ASA – fanger også selskaper som er avnotert/oppløst senere).
     2. Selskaper med mange aksjonærer i ett eller flere år (fanger børsnoterte
        AS, f.eks. på Euronext Growth, og historisk noterte som er borte i dag).
+
+    asa_only=True hopper over (2) – mye raskere og høy treffrate (de fleste
+    ASA er/var børsnotert), uten støy fra sparebanker, idrettslag o.l.
     """
     kand = {}
     # 1) ASA-selskaper.
@@ -66,16 +71,17 @@ def kandidater():
             "where organisasjonsform_kode = 'ASA' and navn is not null"):
         kand[r["orgnr"]] = r["navn"]
     # 2) Selskaper med mange eiere – per år (partisjonsvis = raskt).
-    for yr in range(FRA, TIL + 1):
-        try:
-            rows = run_sql(
-                f"select orgnr, max(selskap) as navn, count(*) as eiere "
-                f"from brreg.aksjonaerer where aar = {yr} group by orgnr "
-                f"having count(*) > {MIN_EIERE}")
-        except Exception:
-            continue
-        for r in rows:
-            kand.setdefault(r["orgnr"], r["navn"])
+    if not asa_only:
+        for yr in range(FRA, TIL + 1):
+            try:
+                rows = run_sql(
+                    f"select orgnr, max(selskap) as navn, count(*) as eiere "
+                    f"from brreg.aksjonaerer where aar = {yr} group by orgnr "
+                    f"having count(*) > {MIN_EIERE}")
+            except Exception:
+                continue
+            for r in rows:
+                kand.setdefault(r["orgnr"], r["navn"])
     return list(kand.items())
 
 
@@ -143,7 +149,8 @@ def upsert_kurs(rows):
 
 def main():
     force = "--force" in sys.argv
-    kand = kandidater()
+    asa_only = "--asa-only" in sys.argv
+    kand = kandidater(asa_only=asa_only)
     # Hopp over selskaper vi allerede har funnet ticker for (sparer Yahoo-kall),
     # med mindre --force er satt (da oppfriskes alle).
     alt = set()
