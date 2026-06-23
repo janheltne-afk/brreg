@@ -109,6 +109,13 @@ def oppdater_selskap(org):
             "(" + ",".join([t(o), t(gk), t(rk), t(rb), t(pn), dte(pf), t(eo), t(en), b(fr), n(rek), dte(se)]) + ")"
             for o, gk, rk, rb, pn, pf, eo, en, fr, rek, se in rows)
         sql += f" insert into brreg.roller ({COLS}) values {vals};"
+        # Sørg for at nye personer med verv dukker opp i navnesøket (brreg.sok_navn).
+        personer = {(pn, pf) for o, gk, rk, rb, pn, pf, eo, en, fr, rek, se in rows if pn and pf}
+        pvals = ",".join(
+            f"(upper({t(navn)}), to_char({dte(f)}, 'YYYY'), false, true)" for navn, f in personer)
+        if pvals:
+            sql += (" insert into brreg.sok_navn (navn, fodselsaar, er_aksjonaer, har_rolle) "
+                    f"values {pvals} on conflict (navn, fodselsaar) do update set har_rolle = true;")
     run_sql(sql)
 
 

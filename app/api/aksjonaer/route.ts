@@ -42,8 +42,27 @@ export async function GET(req: NextRequest) {
           order by aar`
       : [];
 
-    return NextResponse.json({ navn, fodselsaar, perAar, historikk, skatt });
+    // Styreverv / roller: hvilke selskap personen har verv i, og når det sist ble
+    // registrert (sist_endret ≈ hvor lenge vervet har stått). Matcher på navn,
+    // og på fødselsår når oppgitt (skiller navnesøsken).
+    const rolleFilter = /^\d{4}$/.test(fodselsaar)
+      ? sql`upper(r.person_navn) = ${navn} and to_char(r.person_fodselsdato, 'YYYY') = ${fodselsaar}`
+      : sql`upper(r.person_navn) = ${navn}`;
+    const roller = await sql<
+      { orgnr: string; selskap: string | null; rolletype_kode: string; rolletype_beskrivelse: string;
+        fratraadt: boolean | null; sist_endret: string | null }[]
+    >`
+      select r.organisasjonsnummer as orgnr, e.navn as selskap,
+             r.rolletype_kode, r.rolletype_beskrivelse,
+             coalesce(r.fratraadt, false) as fratraadt, r.sist_endret
+      from brreg.roller r
+      left join brreg.enheter e on e.organisasjonsnummer = r.organisasjonsnummer
+      where ${rolleFilter}
+      order by coalesce(r.fratraadt, false), r.sist_endret desc nulls last
+      limit 200`;
+
+    return NextResponse.json({ navn, fodselsaar, perAar, historikk, skatt, roller });
   } catch {
-    return NextResponse.json({ navn, fodselsaar, perAar: [], historikk: [], skatt: [] });
+    return NextResponse.json({ navn, fodselsaar, perAar: [], historikk: [], skatt: [], roller: [] });
   }
 }
