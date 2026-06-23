@@ -32,15 +32,23 @@ export async function GET(
       group by aar order by aar`;
 
     const sisteAar = perAar.length ? perAar[perAar.length - 1].aar : null;
+    // Kurs for selskapet det aktuelle året (hvis børsnotert) -> verdi per eierpost.
+    const [kursRad] = sisteAar
+      ? await sql<{ kurs: string }[]>`
+          select kurs from brreg.aksjekurs where orgnr = ${orgnr} and aar = ${sisteAar}`
+      : [];
+    const kurs = kursRad?.kurs ?? null;
+
     const toppEiere = sisteAar
       ? await sql`
-          select aksjonaer_navn, fodselsaar_orgnr, postnr_sted, aksjeklasse, antall_aksjer
+          select aksjonaer_navn, fodselsaar_orgnr, postnr_sted, aksjeklasse, antall_aksjer,
+                 case when ${kurs}::numeric is not null then (antall_aksjer * ${kurs}::numeric) end as verdi
           from brreg.aksjonaerer
           where orgnr = ${orgnr} and aar = ${sisteAar}
           order by antall_aksjer desc nulls last limit 20`
       : [];
 
-    return NextResponse.json({ enhet: enhet ?? null, regnskap: regnskap ?? null, perAar, sisteAar, toppEiere });
+    return NextResponse.json({ enhet: enhet ?? null, regnskap: regnskap ?? null, perAar, sisteAar, kurs, toppEiere });
   } catch {
     return NextResponse.json({ enhet: null, regnskap: null, perAar: [], sisteAar: null, toppEiere: [] });
   }

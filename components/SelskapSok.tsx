@@ -16,12 +16,14 @@ type Detalj = {
   regnskap: Record<string, unknown> | null;
   perAar: { aar: number; antall_eiere: number; sum_aksjer: string }[];
   sisteAar: number | null;
+  kurs: string | null;
   toppEiere: {
     aksjonaer_navn: string;
     fodselsaar_orgnr: string | null;
     postnr_sted: string | null;
     aksjeklasse: string | null;
     antall_aksjer: string | null;
+    verdi: string | null;
   }[];
 };
 
@@ -140,6 +142,11 @@ export function SelskapSok({ initialOrgnr }: { initialOrgnr?: string }) {
             <div className="card overflow-x-auto">
               <h3 className="px-4 pt-4 text-sm font-semibold">
                 Største aksjeeiere {detalj.sisteAar}
+                {detalj.kurs && (
+                  <span className="ml-2 font-normal" style={{ color: "var(--muted)" }}>
+                    · børskurs {kroner(detalj.kurs)} ({detalj.sisteAar})
+                  </span>
+                )}
               </h3>
               <table className="mt-2 w-full text-sm">
                 <thead>
@@ -149,6 +156,7 @@ export function SelskapSok({ initialOrgnr }: { initialOrgnr?: string }) {
                     <th className="px-4 py-2 font-medium">Sted</th>
                     <th className="px-4 py-2 font-medium">Klasse</th>
                     <th className="px-4 py-2 text-right font-medium">Antall aksjer</th>
+                    <th className="px-4 py-2 text-right font-medium">Verdi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -158,7 +166,8 @@ export function SelskapSok({ initialOrgnr }: { initialOrgnr?: string }) {
                       <td className="px-4 py-2" style={{ color: "var(--muted)" }}>{o.fodselsaar_orgnr ?? "–"}</td>
                       <td className="px-4 py-2" style={{ color: "var(--muted)" }}>{o.postnr_sted ?? "–"}</td>
                       <td className="px-4 py-2" style={{ color: "var(--muted)" }}>{o.aksjeklasse ?? "–"}</td>
-                      <td className="px-4 py-2 text-right">{antall(o.antall_aksjer)}</td>
+                      <td className="px-4 py-2 text-right tabnum">{antall(o.antall_aksjer)}</td>
+                      <td className="px-4 py-2 text-right tabnum font-medium">{o.verdi ? kroner(o.verdi, { kompakt: true }) : "–"}</td>
                     </tr>
                   ))}
                 </tbody>
