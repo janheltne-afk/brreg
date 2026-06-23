@@ -20,7 +20,7 @@ TOK = os.environ["SUPABASE_ACCESS_TOKEN"]
 QURL = f"https://api.supabase.com/v1/projects/{REF}/database/query"
 FRA = int(sys.argv[1]) if len(sys.argv) > 1 else 2005
 TIL = int(sys.argv[2]) if len(sys.argv) > 2 else datetime.date.today().year
-MIN_EIERE = int(sys.argv[3]) if len(sys.argv) > 3 else 400
+MIN_EIERE = int(sys.argv[3]) if len(sys.argv) > 3 else 150
 
 
 def curl(args, timeout=40):
@@ -52,12 +52,31 @@ def q(s):
 
 
 def kandidater():
-    """Selskaper med mange eiere i siste år = sannsynlig børsnotert."""
-    rows = run_sql(
-        f"select orgnr, max(selskap) as navn, count(*) as eiere "
-        f"from brreg.aksjonaerer where aar = {TIL} group by orgnr "
-        f"having count(*) > {MIN_EIERE} order by count(*) desc")
-    return [(r["orgnr"], r["navn"]) for r in rows]
+    """Kandidater for børsnotering, fra flere kilder slått sammen:
+
+    1. Alle ASA-selskaper i Enhetsregisteret (børsnotering forutsetter normalt
+       ASA – fanger også selskaper som er avnotert/oppløst senere).
+    2. Selskaper med mange aksjonærer i ett eller flere år (fanger børsnoterte
+       AS, f.eks. på Euronext Growth, og historisk noterte som er borte i dag).
+    """
+    kand = {}
+    # 1) ASA-selskaper.
+    for r in run_sql(
+            "select organisasjonsnummer as orgnr, navn from brreg.enheter "
+            "where organisasjonsform_kode = 'ASA' and navn is not null"):
+        kand[r["orgnr"]] = r["navn"]
+    # 2) Selskaper med mange eiere – per år (partisjonsvis = raskt).
+    for yr in range(FRA, TIL + 1):
+        try:
+            rows = run_sql(
+                f"select orgnr, max(selskap) as navn, count(*) as eiere "
+                f"from brreg.aksjonaerer where aar = {yr} group by orgnr "
+                f"having count(*) > {MIN_EIERE}")
+        except Exception:
+            continue
+        for r in rows:
+            kand.setdefault(r["orgnr"], r["navn"])
+    return list(kand.items())
 
 
 def yahoo_search(navn):
@@ -65,10 +84,14 @@ def yahoo_search(navn):
     sok = re.sub(r"\s+(ASA|AS|SE|ASA\.)\s*$", "", navn).strip() or navn
     url = ("https://query2.finance.yahoo.com/v1/finance/search?q="
            + urllib.parse.quote(sok) + "&quotesCount=8&newsCount=0&listsCount=0")
-    out = curl(["-H", "User-Agent: Mozilla/5.0", "-H", "Accept: */*", url], timeout=20)
-    try:
-        d = json.loads(out)
-    except json.JSONDecodeError:
+    d = None
+    for attempt in range(4):
+        out = curl(["-H", "User-Agent: Mozilla/5.0", "-H", "Accept: */*", url], timeout=20)
+        try:
+            d = json.loads(out); break
+        except json.JSONDecodeError:
+            time.sleep(2 ** attempt)  # trolig rate-limit (429/403) – vent og prøv igjen
+    if d is None:
         return None
     toks = [t for t in re.findall(r"[A-ZÆØÅ0-9]{4,}", navn.upper())]
     for qt in d.get("quotes", []):
@@ -119,8 +142,16 @@ def upsert_kurs(rows):
 
 
 def main():
+    force = "--force" in sys.argv
     kand = kandidater()
-    print(f"{len(kand)} kandidater (>{MIN_EIERE} eiere). Slår opp ticker…\n")
+    # Hopp over selskaper vi allerede har funnet ticker for (sparer Yahoo-kall),
+    # med mindre --force er satt (da oppfriskes alle).
+    alt = set()
+    if not force:
+        alt = {r["orgnr"] for r in run_sql("select distinct orgnr from brreg.noterte_selskap")}
+    kand = [(o, n) for o, n in kand if o not in alt]
+    print(f"{len(kand)} nye kandidater (ASA + >{MIN_EIERE} eiere). "
+          f"{len(alt)} allerede løst. Slår opp ticker…\n")
 
     funnet, notert, kurs_rader = 0, [], []
     for idx, (orgnr, navn) in enumerate(kand, 1):
