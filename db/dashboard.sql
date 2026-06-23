@@ -14,6 +14,11 @@ CREATE INDEX IF NOT EXISTS ix_enheter_navn_trgm
 CREATE INDEX IF NOT EXISTS ix_aksj_navn_pat
   ON brreg.aksjonaerer (aksjonaer_navn text_pattern_ops);
 
+-- Dekkende indeks for navnesøk MED fødselsår: gjør (navn, fødselsår)-oppslaget
+-- index-only (ingen heap-fetch), så autocomplete går fra ~60 s til ms.
+CREATE INDEX IF NOT EXISTS ix_aksj_navn_fodsel
+  ON brreg.aksjonaerer (aksjonaer_navn text_pattern_ops, fodselsaar_orgnr text_pattern_ops);
+
 -- ── Materialiserte views (raske dashboard-tall) ───────────────
 CREATE MATERIALIZED VIEW IF NOT EXISTS brreg.mv_kpi AS
 SELECT
