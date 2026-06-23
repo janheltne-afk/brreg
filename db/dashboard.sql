@@ -66,3 +66,15 @@ ORDER BY aar;
 -- REFRESH MATERIALIZED VIEW brreg.mv_naering;
 -- REFRESH MATERIALIZED VIEW brreg.mv_topp_inntekt;
 -- (kjør på nytt CREATE TABLE-blokken over for dash_aksjeposter_per_aar)
+
+-- ── Kommune-screener (investering) ────────────────────────────
+CREATE INDEX IF NOT EXISTS ix_enheter_kommune ON brreg.enheter (forr_kommune);
+
+-- Kommune-liste for nedtrekket (antall selskaper med regnskap per kommune).
+DROP TABLE IF EXISTS brreg.dash_kommuner;
+CREATE TABLE brreg.dash_kommuner AS
+SELECT e.forr_kommune AS kommune, count(*)::int AS antall
+FROM brreg.enheter e
+JOIN brreg.regnskap r ON r.organisasjonsnummer = e.organisasjonsnummer
+WHERE e.forr_kommune IS NOT NULL
+GROUP BY e.forr_kommune ORDER BY e.forr_kommune;
