@@ -82,6 +82,34 @@ export function AksjonaerSok() {
     return { aar, selskaper, celle };
   }, [detalj]);
 
+  // Sammendrag for personen: antall selskaper, estimert porteføljeverdi (siste
+  // kjente verdi der børskurs finnes), aktive styreverv og siste skatteår.
+  const sammendrag = useMemo(() => {
+    let verdi = 0;
+    let harVerdi = false;
+    for (const s of selskaper) {
+      for (let i = aar.length - 1; i >= 0; i--) {
+        const c = celle.get(`${s.orgnr}|${aar[i]}`);
+        if (c != null) {
+          if (c.verdi) { verdi += Number(c.verdi); harVerdi = true; }
+          break;
+        }
+      }
+    }
+    const roller = detalj?.roller ?? [];
+    const aktiveVerv = roller.filter((r) => !r.fratraadt).length;
+    const skatt = detalj?.skatt ?? [];
+    const sisteSkatt = skatt.length ? skatt[skatt.length - 1] : null;
+    return {
+      antallSelskaper: selskaper.length,
+      verdi: harVerdi ? verdi : null,
+      aktiveVerv,
+      antallVerv: roller.length,
+      sisteSkatt,
+      periode: aar.length ? `${aar[0]}–${aar[aar.length - 1]}` : null,
+    };
+  }, [selskaper, aar, celle, detalj]);
+
   return (
     <div className="space-y-6">
       <div className="relative max-w-xl">
@@ -130,11 +158,30 @@ export function AksjonaerSok() {
             <span className="text-sm" style={{ color: "var(--muted)" }}>
               {detalj.fodselsaar ? `f. ${detalj.fodselsaar}` : ""}
               {aar.length > 0
-                ? ` · ${selskaper.length} selskap · aktiv ${aar[0]}–${aar[aar.length - 1]}`
+                ? ` · aktiv ${aar[0]}–${aar[aar.length - 1]}`
                 : detalj.roller && detalj.roller.length > 0
-                ? ` · ${detalj.roller.filter((r) => !r.fratraadt).length} aktive verv`
+                ? " · har styreverv"
                 : " · kun i skattelista"}
             </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <Stat k="Selskaper eid" v={antall(sammendrag.antallSelskaper)} />
+            <Stat
+              k="Estimert verdi"
+              v={sammendrag.verdi != null ? kroner(sammendrag.verdi, { kompakt: true }) : "–"}
+              sub={sammendrag.verdi != null ? "der børskurs finnes" : "ingen børskurs"}
+            />
+            <Stat
+              k="Styreverv"
+              v={`${sammendrag.aktiveVerv} aktive`}
+              sub={sammendrag.antallVerv > sammendrag.aktiveVerv ? `${sammendrag.antallVerv} totalt` : undefined}
+            />
+            <Stat
+              k="Formue (skatteliste)"
+              v={sammendrag.sisteSkatt ? kroner(sammendrag.sisteSkatt.formue, { kompakt: true }) : "–"}
+              sub={sammendrag.sisteSkatt ? `${sammendrag.sisteSkatt.aar}` : undefined}
+            />
           </div>
 
           {detalj.roller && detalj.roller.length > 0 && (
@@ -271,6 +318,16 @@ export function AksjonaerSok() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function Stat({ k, v, sub }: { k: string; v: string; sub?: string }) {
+  return (
+    <div className="card p-3">
+      <div className="text-xs" style={{ color: "var(--muted)" }}>{k}</div>
+      <div className="mt-0.5 text-lg font-semibold">{v}</div>
+      {sub && <div className="text-xs" style={{ color: "var(--muted)" }}>{sub}</div>}
     </div>
   );
 }

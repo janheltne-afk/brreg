@@ -13,6 +13,7 @@ type Treff = {
 
 type Detalj = {
   enhet: Record<string, unknown> | null;
+  morNavn: string | null;
   regnskap: Record<string, unknown> | null;
   perAar: { aar: number; antall_eiere: number; sum_aksjer: string }[];
   sisteAar: number | null;
@@ -157,21 +158,102 @@ export function SelskapSok({ initialOrgnr }: { initialOrgnr?: string }) {
               </div>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm md:grid-cols-3">
-              <Felt k="Form" v={`${e.organisasjonsform_kode ?? "–"}`} />
-              <Felt k="Næring" v={`${e.naeringskode1_beskrivelse ?? "–"}`} />
+              <Felt k="Form" v={`${e.organisasjonsform_beskrivelse ?? e.organisasjonsform_kode ?? "–"}`} />
+              <Felt k="Bransje" v={`${e.naeringskode1_beskrivelse ?? "–"}`} />
+              {e.naeringskode2_beskrivelse ? <Felt k="Bransje 2" v={`${e.naeringskode2_beskrivelse}`} /> : null}
               <Felt k="Ansatte" v={e.antall_ansatte != null ? antall(e.antall_ansatte as number) : "–"} />
-              <Felt k="Sted" v={`${e.forr_poststed ?? "–"}`} />
+              <Felt
+                k="Adresse"
+                v={[e.forr_adresse, [e.forr_postnummer, e.forr_poststed].filter(Boolean).join(" ")]
+                  .filter(Boolean)
+                  .join(", ") || (e.forr_poststed as string) || "–"}
+              />
+              <Felt k="Kommune" v={`${e.forr_kommune ?? "–"}`} />
               <Felt k="Stiftet" v={dato(e.stiftelsesdato as string)} />
-              <Felt k="Status" v={e.konkurs ? "Konkurs" : e.under_avvikling ? "Under avvikling" : "Aktiv"} />
+              <Felt k="Registrert" v={dato(e.registreringsdato as string)} />
+              <Felt k="Sektor" v={`${e.institusjonell_sektor_beskrivelse ?? "–"}`} />
+              <Felt k="MVA-registrert" v={e.registrert_mva ? "Ja" : "Nei"} />
+              <Felt k="Foretaksregisteret" v={e.registrert_foretaksreg ? "Ja" : "Nei"} />
+              {detalj?.morNavn ? <Felt k="Morselskap" v={detalj.morNavn} /> : null}
+              <Felt
+                k="Status"
+                v={
+                  e.slettedato
+                    ? "Slettet"
+                    : e.konkurs
+                    ? "Konkurs"
+                    : e.under_avvikling
+                    ? "Under avvikling"
+                    : "Aktiv"
+                }
+              />
+              {e.hjemmeside ? (
+                <div>
+                  <div className="text-xs" style={{ color: "var(--muted)" }}>Hjemmeside</div>
+                  <a
+                    href={`${String(e.hjemmeside).startsWith("http") ? "" : "https://"}${e.hjemmeside}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline"
+                    style={{ color: "var(--accent)" }}
+                  >
+                    {String(e.hjemmeside)}
+                  </a>
+                </div>
+              ) : null}
             </div>
           </div>
 
           {rg && (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              <Mini k="Driftsinntekter" v={kroner(rg.sum_driftsinntekter as string, { kompakt: true })} />
-              <Mini k="Driftsresultat" v={kroner(rg.driftsresultat as string, { kompakt: true })} />
-              <Mini k="Årsresultat" v={kroner(rg.aarsresultat as string, { kompakt: true })} />
-              <Mini k="Egenkapital" v={kroner(rg.sum_egenkapital as string, { kompakt: true })} />
+            <div className="space-y-3">
+              <div className="flex items-baseline gap-2">
+                <h3 className="text-sm font-semibold">Regnskap</h3>
+                <span className="text-xs" style={{ color: "var(--muted)" }}>
+                  {regnskapsperiode(rg)} · {String(rg.regnskapsregler ?? "")}
+                  {rg.smaa_foretak ? " · små foretak" : ""}
+                  {rg.revisjon_ikke_revidert ? " · ikke revidert" : ""}
+                </span>
+              </div>
+              <div className="grid gap-3 lg:grid-cols-3">
+                <div className="card p-4">
+                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--muted)" }}>
+                    Resultatregnskap
+                  </h4>
+                  <Linje k="Driftsinntekter" v={rg.sum_driftsinntekter as string} />
+                  <Linje k="Driftskostnader" v={rg.sum_driftskostnad as string} neg />
+                  <Linje k="Driftsresultat" v={rg.driftsresultat as string} sterk />
+                  <Linje k="Finansinntekter" v={rg.sum_finansinntekter as string} />
+                  <Linje k="Finanskostnader" v={rg.sum_finanskostnad as string} neg />
+                  <Linje k="Resultat før skatt" v={rg.ordinaert_resultat_foer_skatt as string} />
+                  <Linje k="Årsresultat" v={rg.aarsresultat as string} sterk />
+                </div>
+                <div className="card p-4">
+                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--muted)" }}>
+                    Balanse
+                  </h4>
+                  <Linje k="Anleggsmidler" v={rg.sum_anleggsmidler as string} />
+                  <Linje k="Omløpsmidler" v={rg.sum_omloepsmidler as string} />
+                  <Linje k="Sum eiendeler" v={rg.sum_eiendeler as string} sterk />
+                  <Linje k="Egenkapital" v={rg.sum_egenkapital as string} sterk />
+                  <Linje k="Langsiktig gjeld" v={rg.sum_langsiktig_gjeld as string} />
+                  <Linje k="Kortsiktig gjeld" v={rg.sum_kortsiktig_gjeld as string} />
+                  <Linje k="Sum gjeld" v={rg.sum_gjeld as string} />
+                </div>
+                <div className="card p-4">
+                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--muted)" }}>
+                    Nøkkeltall
+                  </h4>
+                  <Nokkel k="Driftsmargin" v={pct(rg.driftsresultat, rg.sum_driftsinntekter)} />
+                  <Nokkel k="Resultatmargin" v={pct(rg.aarsresultat, rg.sum_driftsinntekter)} />
+                  <Nokkel k="Egenkapitalandel" v={pct(rg.sum_egenkapital, rg.sum_eiendeler)} />
+                  <Nokkel k="Likviditetsgrad" v={ratio(rg.sum_omloepsmidler, rg.sum_kortsiktig_gjeld)} />
+                  <Nokkel k="Gjeldsgrad" v={ratio(rg.sum_gjeld, rg.sum_egenkapital)} />
+                </div>
+              </div>
+              <p className="text-xs" style={{ color: "var(--muted)" }}>
+                Regnskapstall fra Brønnøysundregistrene gjelder siste innsendte årsregnskap. Eldre
+                årstall er ikke tilgjengelig i åpne data. Eierhistorikken under viser utviklingen bakover i tid.
+              </p>
             </div>
           )}
 
@@ -349,11 +431,56 @@ function Felt({ k, v }: { k: string; v: string }) {
   );
 }
 
-function Mini({ k, v }: { k: string; v: string }) {
+// Regnskapslinje: etikett + beløp (kompakt). sterk = uthevet sum, neg = vises negativt.
+function Linje({ k, v, sterk, neg }: { k: string; v: string | null; sterk?: boolean; neg?: boolean }) {
+  const tall = v == null || v === "" ? null : Number(v);
+  const visning = tall == null ? "–" : kroner(neg && tall > 0 ? -tall : tall, { kompakt: true });
   return (
-    <div className="card p-3">
-      <div className="text-xs" style={{ color: "var(--muted)" }}>{k}</div>
-      <div className="mt-0.5 text-lg font-semibold">{v}</div>
+    <div
+      className="flex items-center justify-between gap-3 border-b py-1 text-sm last:border-0"
+      style={{ borderColor: "var(--border)" }}
+    >
+      <span style={{ color: "var(--muted)" }}>{k}</span>
+      <span className={`tabnum ${sterk ? "font-semibold" : ""}`}>{visning}</span>
     </div>
   );
+}
+
+function Nokkel({ k, v }: { k: string; v: string }) {
+  return (
+    <div
+      className="flex items-center justify-between gap-3 border-b py-1 text-sm last:border-0"
+      style={{ borderColor: "var(--border)" }}
+    >
+      <span style={{ color: "var(--muted)" }}>{k}</span>
+      <span className="tabnum font-medium">{v}</span>
+    </div>
+  );
+}
+
+function num(v: unknown): number | null {
+  if (v == null || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+// Prosent av to størrelser (a/b), f.eks. margin og egenkapitalandel.
+function pct(a: unknown, b: unknown): string {
+  const x = num(a), y = num(b);
+  if (x == null || y == null || y === 0) return "–";
+  return `${((x / y) * 100).toLocaleString("nb-NO", { maximumFractionDigits: 1 })} %`;
+}
+
+// Forholdstall (a/b), f.eks. likviditetsgrad og gjeldsgrad.
+function ratio(a: unknown, b: unknown): string {
+  const x = num(a), y = num(b);
+  if (x == null || y == null || y === 0) return "–";
+  return (x / y).toLocaleString("nb-NO", { maximumFractionDigits: 2 });
+}
+
+// Årstall for regnskapsperioden (eller fra–til hvis ikke kalenderår).
+function regnskapsperiode(rg: Record<string, unknown>): string {
+  const til = rg.regnskapsperiode_til ? new Date(String(rg.regnskapsperiode_til)) : null;
+  if (!til || Number.isNaN(til.getTime())) return "siste år";
+  return `Regnskapsår ${til.getFullYear()}`;
 }
