@@ -15,14 +15,27 @@ export async function GET(
   try {
     const [enhet] = await sql`
       select organisasjonsnummer, navn, organisasjonsform_kode, organisasjonsform_beskrivelse,
-             naeringskode1_beskrivelse, antall_ansatte, stiftelsesdato, forr_poststed,
-             forr_kommune, hjemmeside, konkurs, under_avvikling,
-             institusjonell_sektor_beskrivelse
+             naeringskode1, naeringskode1_beskrivelse, naeringskode2_beskrivelse,
+             antall_ansatte, stiftelsesdato, registreringsdato, forr_adresse, forr_postnummer,
+             forr_poststed, forr_kommune, forr_land, hjemmeside, epostadresse,
+             registrert_mva, registrert_foretaksreg, konkurs, under_avvikling, slettedato,
+             overordnet_enhet, institusjonell_sektor_beskrivelse, sist_oppdatert
       from brreg.enheter where organisasjonsnummer = ${orgnr}`;
 
+    // Navn på evt. morselskap.
+    const [mor] = enhet?.overordnet_enhet
+      ? await sql<{ navn: string | null }[]>`
+          select navn from brreg.enheter where organisasjonsnummer = ${enhet.overordnet_enhet as string}`
+      : [];
+
     const [regnskap] = await sql`
-      select regnskapsperiode_til, sum_driftsinntekter, driftsresultat, aarsresultat,
-             sum_eiendeler, sum_egenkapital, sum_gjeld
+      select regnskapsperiode_fra, regnskapsperiode_til, valuta, regnskapstype, morselskap,
+             regnskapsregler, smaa_foretak, revisjon_ikke_revidert,
+             sum_driftsinntekter, sum_driftskostnad, driftsresultat,
+             sum_finansinntekter, sum_finanskostnad, netto_finans,
+             ordinaert_resultat_foer_skatt, aarsresultat,
+             sum_anleggsmidler, sum_omloepsmidler, sum_eiendeler,
+             sum_egenkapital, sum_langsiktig_gjeld, sum_kortsiktig_gjeld, sum_gjeld
       from brreg.regnskap where organisasjonsnummer = ${orgnr}
       order by regnskapsperiode_til desc nulls last limit 1`;
 
@@ -90,8 +103,8 @@ export async function GET(
         when 'MEDL' then 4 when 'VARA' then 5 else 9 end, rekkefolge nulls last`;
 
     const eierHistorikkStor = Boolean(sisteAar && maksEiere > 5000);
-    return NextResponse.json({ enhet: enhet ?? null, regnskap: regnskap ?? null, perAar, sisteAar, kurs, toppEiere, eierHistorikk, eierHistorikkStor, roller });
+    return NextResponse.json({ enhet: enhet ?? null, morNavn: mor?.navn ?? null, regnskap: regnskap ?? null, perAar, sisteAar, kurs, toppEiere, eierHistorikk, eierHistorikkStor, roller });
   } catch {
-    return NextResponse.json({ enhet: null, regnskap: null, perAar: [], sisteAar: null, toppEiere: [], eierHistorikk: [], eierHistorikkStor: false, roller: [] });
+    return NextResponse.json({ enhet: null, morNavn: null, regnskap: null, perAar: [], sisteAar: null, toppEiere: [], eierHistorikk: [], eierHistorikkStor: false, roller: [] });
   }
 }
