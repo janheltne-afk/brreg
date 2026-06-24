@@ -19,18 +19,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             borderBottom: "1px solid var(--border)",
           }}
         >
-          <div className="mx-auto max-w-7xl px-5 py-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h1 className="text-lg font-bold tracking-tight">
-                  Brreg<span className="accent-text"> · dashboard</span>
-                </h1>
-                <p className="text-xs" style={{ color: "var(--muted)" }}>
-                  Enheter · Regnskap · Aksjonærer 2005–2025
-                </p>
-              </div>
-              <Tabs />
-            </div>
+          <div className="mx-auto max-w-7xl px-5 py-3">
+            <Tabs />
           </div>
         </header>
         <main className="mx-auto max-w-7xl px-5 py-7">{children}</main>

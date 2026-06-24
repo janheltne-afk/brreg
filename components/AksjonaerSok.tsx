@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import Link from "next/link";
+import { BokmerkeKnapp } from "@/components/BokmerkeKnapp";
 import { antall, kroner, dato } from "@/lib/format";
 
 type Hist = { orgnr: string; selskap: string; aar: number; antall_aksjer: string; verdi: string | null };
@@ -24,7 +25,7 @@ type Detalj = {
   roller: Rolle[];
 };
 
-export function AksjonaerSok() {
+export function AksjonaerSok({ initialNavn, initialFodselsaar }: { initialNavn?: string; initialFodselsaar?: string }) {
   const [q, setQ] = useState("");
   const [treff, setTreff] = useState<Treff[]>([]);
   const [detalj, setDetalj] = useState<Detalj | null>(null);
@@ -42,6 +43,11 @@ export function AksjonaerSok() {
       setLaster(false);
     }
   }, []);
+
+  // Åpne direkte fra et bokmerke (?navn=&fodselsaar=).
+  useEffect(() => {
+    if (initialNavn) lastNavn(initialNavn, initialFodselsaar ?? "");
+  }, [initialNavn, initialFodselsaar, lastNavn]);
 
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
@@ -163,6 +169,14 @@ export function AksjonaerSok() {
                 ? " · har styreverv"
                 : " · kun i skattelista"}
             </span>
+            <BokmerkeKnapp
+              b={{
+                type: "aksjonaer",
+                key: `${detalj.navn}|${detalj.fodselsaar ?? ""}`,
+                navn: detalj.navn,
+                fodselsaar: detalj.fodselsaar,
+              }}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

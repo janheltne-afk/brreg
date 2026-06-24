@@ -11,4 +11,5 @@ export const tabs: Tab[] = [
   { slug: "aksjonarer", navn: "Aksjonær", beskrivelse: "Følg én persons aksjeposter gjennom flere år" },
   { slug: "formue", navn: "Formue", beskrivelse: "Markedsverdi av en eiers aksjeposter over tid" },
   { slug: "investering", navn: "Investering", beskrivelse: "Finn økonomisk sterke selskaper per kommune" },
+  { slug: "bokmerker", navn: "Bokmerker", beskrivelse: "Lagrede selskap og aksjonærer" },
 ];

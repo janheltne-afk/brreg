@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { LineChartCard } from "@/components/charts/LineChartCard";
+import { BokmerkeKnapp } from "@/components/BokmerkeKnapp";
 import { antall, kroner, dato } from "@/lib/format";
 
 type Treff = {
@@ -144,6 +145,14 @@ export function SelskapSok({ initialOrgnr }: { initialOrgnr?: string }) {
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-xl font-semibold">{String(e.navn ?? "")}</h2>
               <div className="flex flex-wrap items-center gap-2">
+                <BokmerkeKnapp
+                  b={{
+                    type: "selskap",
+                    key: String(e.organisasjonsnummer),
+                    navn: String(e.navn ?? e.organisasjonsnummer),
+                    orgnr: String(e.organisasjonsnummer),
+                  }}
+                />
                 <CopyOrgnr orgnr={String(e.organisasjonsnummer)} />
                 <a
                   href="https://rettsstiftelser.brreg.no/nb/oppslag#virksomhet"
