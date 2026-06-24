@@ -142,9 +142,19 @@ export function SelskapSok({ initialOrgnr }: { initialOrgnr?: string }) {
           <div className="card p-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-xl font-semibold">{String(e.navn ?? "")}</h2>
-              <span className="text-sm" style={{ color: "var(--muted)" }}>
-                Org.nr {String(e.organisasjonsnummer)}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <CopyOrgnr orgnr={String(e.organisasjonsnummer)} />
+                <a
+                  href="https://rettsstiftelser.brreg.no/nb/oppslag#virksomhet"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-lg px-2.5 py-1 text-xs font-medium hover:opacity-80"
+                  style={{ border: "1px solid var(--border)", color: "var(--accent)" }}
+                  title="Åpne Rettsstiftelser (lim inn org.nr for å se pant, utlegg m.m.)"
+                >
+                  Rettsstiftelser ↗
+                </a>
+              </div>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm md:grid-cols-3">
               <Felt k="Form" v={`${e.organisasjonsform_kode ?? "–"}`} />
@@ -307,6 +317,26 @@ export function SelskapSok({ initialOrgnr }: { initialOrgnr?: string }) {
         </div>
       )}
     </div>
+  );
+}
+
+function CopyOrgnr({ orgnr }: { orgnr: string }) {
+  const [kopiert, setKopiert] = useState(false);
+  return (
+    <button
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(orgnr);
+          setKopiert(true);
+          setTimeout(() => setKopiert(false), 1500);
+        } catch {}
+      }}
+      className="rounded-lg px-2.5 py-1 text-xs font-medium hover:opacity-80"
+      style={{ border: "1px solid var(--border)", color: "var(--muted)" }}
+      title="Kopiér organisasjonsnummeret"
+    >
+      {kopiert ? "Kopiert ✓" : `Org.nr ${orgnr} ⧉`}
+    </button>
   );
 }
 
