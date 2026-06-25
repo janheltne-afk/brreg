@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS brreg.roller (
 
 CREATE INDEX IF NOT EXISTS ix_roller_orgnr  ON brreg.roller (organisasjonsnummer);
 CREATE INDEX IF NOT EXISTS ix_roller_person ON brreg.roller (upper(person_navn));
+-- For rask fornavn-prefiks-match (LIKE 'FORNAVN%') i suksesshistorie-oppslaget.
+CREATE INDEX IF NOT EXISTS ix_roller_person_tp ON brreg.roller (upper(person_navn) text_pattern_ops);
 
 -- Personer med styreverv legges også inn i søke-tabellen brreg.sok_navn
 -- (med har_rolle=true), slik at de dukker opp i navnesøket selv om de verken
