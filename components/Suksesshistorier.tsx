@@ -20,6 +20,7 @@ type Dossier = {
     antallGiret: number;
     maksEiere: number;
   } | null;
+  historikk: { orgnr: string; selskap: string; aar: number; antall: string; verdi: string | null }[];
 };
 
 export function Suksesshistorier() {
@@ -28,6 +29,8 @@ export function Suksesshistorier() {
   const [dossier, setDossier] = useState<Dossier | null>(null);
   const [laster, setLaster] = useState(false);
   const [sorterRelevans, setSorterRelevans] = useState(false);
+  const [dypdykk, setDypdykk] = useState<string | null>(null);
+  const [dypdykkStatus, setDypdykkStatus] = useState<"idle" | "laster" | "feil" | "nokkel">("idle");
   const { rangering, sett } = useRangering();
 
   const treff = useMemo(() => {
@@ -43,6 +46,31 @@ export function Suksesshistorier() {
     return liste;
   }, [q, sorterRelevans, rangering]);
 
+  // Pivot aksjepost-historikk → matrise (selskap × år).
+  const matrise = useMemo(() => {
+    const h = dossier?.historikk ?? [];
+    const aarSet = new Set<number>();
+    const selskapMap = new Map<string, string>();
+    const celle = new Map<string, { antall: string; verdi: string | null }>();
+    for (const r of h) {
+      aarSet.add(r.aar);
+      selskapMap.set(r.orgnr, r.selskap);
+      celle.set(`${r.orgnr}|${r.aar}`, { antall: r.antall, verdi: r.verdi });
+    }
+    const aar = [...aarSet].sort((a, b) => a - b);
+    const selskaper = [...selskapMap.entries()]
+      .map(([orgnr, selskap]) => {
+        let sist = 0;
+        for (let i = aar.length - 1; i >= 0; i--) {
+          const c = celle.get(`${orgnr}|${aar[i]}`);
+          if (c != null) { sist = Number(c.antall); break; }
+        }
+        return { orgnr, selskap, sist };
+      })
+      .sort((a, b) => b.sist - a.sist);
+    return { aar, selskaper, celle };
+  }, [dossier]);
+
   useEffect(() => {
     if (!valgt) {
       setDossier(null);
@@ -50,6 +78,8 @@ export function Suksesshistorier() {
     }
     setLaster(true);
     setDossier(null);
+    setDypdykk(null);
+    setDypdykkStatus("idle");
     const ctrl = new AbortController();
     fetch(
       `/api/suksesshistorie?navn=${encodeURIComponent(valgt.navn)}&fodselsaar=${valgt.fodselsaar ?? ""}`,
@@ -59,8 +89,37 @@ export function Suksesshistorier() {
       .then(setDossier)
       .catch(() => {})
       .finally(() => setLaster(false));
+    // Hent et evt. allerede generert AI-dypdykk (uten å generere på nytt).
+    fetch("/api/suksesshistorie-dypdykk", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ navn: valgt.navn, kunCache: true }),
+      signal: ctrl.signal,
+    })
+      .then((r) => r.json())
+      .then((d) => { if (d?.tekst) setDypdykk(d.tekst); })
+      .catch(() => {});
     return () => ctrl.abort();
   }, [valgt]);
+
+  const genererDypdykk = async () => {
+    if (!valgt) return;
+    setDypdykkStatus("laster");
+    const fakta = dossier ? lagFakta(valgt, dossier) : "";
+    try {
+      const r = await fetch("/api/suksesshistorie-dypdykk", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ navn: valgt.navn, fodselsaar: valgt.fodselsaar, bransje: valgt.bransje, fakta }),
+      });
+      if (r.status === 503) { setDypdykkStatus("nokkel"); return; }
+      const d = await r.json();
+      if (d?.tekst) { setDypdykk(d.tekst); setDypdykkStatus("idle"); }
+      else setDypdykkStatus("feil");
+    } catch {
+      setDypdykkStatus("feil");
+    }
+  };
 
   if (valgt) {
     return (
@@ -88,6 +147,39 @@ export function Suksesshistorier() {
               onVelg={(n) => sett(valgt.navn, n)}
             />
           </div>
+        </div>
+
+        {/* Utfyllende AI-profil, forankret i registerdataene */}
+        <div className="card p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold">Utfyllende profil</h3>
+            {dypdykkStatus !== "laster" && (
+              <button
+                onClick={genererDypdykk}
+                className="rounded-lg px-3 py-1 text-xs font-medium"
+                style={{ border: "1px solid var(--border)", color: "var(--accent)" }}
+              >
+                {dypdykk ? "Regenerer" : "Generer dypdykk (AI)"}
+              </button>
+            )}
+          </div>
+          {dypdykk ? (
+            <div className="mt-3 whitespace-pre-line text-sm leading-relaxed">{dypdykk}</div>
+          ) : dypdykkStatus === "laster" ? (
+            <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>Genererer utfyllende profil… (~10–20 sek)</p>
+          ) : dypdykkStatus === "nokkel" ? (
+            <p className="mt-2 text-sm" style={{ color: "var(--accent2)" }}>
+              AI-dypdykk er ikke aktivert. Legg til miljøvariabelen <strong>ANTHROPIC_API_KEY</strong> i Vercel
+              (Settings → Environment Variables) og redeploy, så kan du generere utfyllende profiler.
+            </p>
+          ) : dypdykkStatus === "feil" ? (
+            <p className="mt-2 text-sm" style={{ color: "var(--accent2)" }}>Noe gikk galt. Prøv igjen.</p>
+          ) : (
+            <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
+              Lag en utfyllende, registerforankret profil: anslått formue, tidslinje (når de startet, vekst,
+              investorer) og hvordan de bygde det – med tydelig merkede antakelser der data mangler.
+            </p>
+          )}
         </div>
 
         {/* Nøkkeltall fra databasen */}
@@ -175,28 +267,42 @@ export function Suksesshistorier() {
           </div>
         )}
 
-        {dossier && dossier.holdings.length > 0 && (
+        {matrise.selskaper.length > 0 && (
           <div className="card overflow-x-auto">
             <h3 className="px-4 pt-4 text-sm font-semibold">
-              Direkte aksjeposter {dossier.sisteAar}{" "}
-              <span style={{ color: "var(--muted)" }}>(personlig eierskap i aksjonærregisteret)</span>
+              Aksjeposter gjennom årene{" "}
+              <span style={{ color: "var(--muted)" }}>
+                (personlig eierskap · antall · <span style={{ color: "var(--accent)" }}>ca. verdi</span> der børskurs finnes)
+              </span>
             </h3>
-            <table className="mt-2 w-full text-sm">
+            <table className="mt-3 w-full text-sm tabnum">
               <thead>
-                <tr className="text-left" style={{ color: "var(--muted)" }}>
-                  <th className="px-4 py-2 font-medium">Selskap</th>
-                  <th className="px-4 py-2 text-right font-medium">Antall aksjer</th>
-                  <th className="px-4 py-2 text-right font-medium">Verdi</th>
+                <tr style={{ color: "var(--muted)" }}>
+                  <th className="sticky left-0 px-4 py-2 text-left font-medium" style={{ background: "var(--panel-solid)" }}>Selskap</th>
+                  {matrise.aar.map((a) => (
+                    <th key={a} className="px-3 py-2 text-right font-medium">{a}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {dossier.holdings.map((h, i) => (
-                  <tr key={`${h.orgnr}|${i}`} className="border-t" style={{ borderColor: "var(--border)" }}>
-                    <td className="px-4 py-2 font-medium">
-                      <Link href={`/selskaper?orgnr=${h.orgnr}`} className="hover:underline">{h.selskap}</Link>
+                {matrise.selskaper.map((s) => (
+                  <tr key={s.orgnr} className="border-t" style={{ borderColor: "var(--border)" }}>
+                    <td className="sticky left-0 px-4 py-2 font-medium" style={{ background: "var(--panel-solid)" }}>
+                      <Link href={`/selskaper?orgnr=${s.orgnr}`} className="hover:underline">{s.selskap}</Link>
                     </td>
-                    <td className="px-4 py-2 text-right tabnum">{antall(h.antall)}</td>
-                    <td className="px-4 py-2 text-right tabnum font-medium">{h.verdi ? kroner(h.verdi, { kompakt: true }) : "–"}</td>
+                    {matrise.aar.map((a) => {
+                      const c = matrise.celle.get(`${s.orgnr}|${a}`);
+                      return (
+                        <td key={a} className="px-3 py-2 text-right align-top" style={{ color: c == null ? "var(--border)" : "var(--text)" }}>
+                          {c == null ? "·" : (
+                            <>
+                              <div>{antall(c.antall)}</div>
+                              {c.verdi && <div className="text-xs" style={{ color: "var(--accent)" }}>{kroner(c.verdi, { kompakt: true })}</div>}
+                            </>
+                          )}
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
               </tbody>
@@ -204,20 +310,13 @@ export function Suksesshistorier() {
           </div>
         )}
 
-        {dossier && dossier.roller.length === 0 && dossier.holdings.length === 0 && !laster && (
+        {dossier && dossier.roller.length === 0 && matrise.selskaper.length === 0 && !laster && (
           <p className="text-sm" style={{ color: "var(--muted)" }}>
             Fant ingen direkte treff i registrene på dette navnet. Formuen holdes ofte via
             holdingselskap, utenlandske strukturer eller under et noe annet registrert navn.
+            {" "}Et AI-dypdykk over kan likevel gi en forankret vurdering.
           </p>
         )}
-
-        <Link
-          href={`/aksjonarer?navn=${encodeURIComponent(valgt.navn.toUpperCase())}&fodselsaar=${valgt.fodselsaar ?? ""}`}
-          className="inline-block text-sm hover:underline"
-          style={{ color: "var(--accent)" }}
-        >
-          Se aksjeposter gjennom årene →
-        </Link>
       </div>
     );
   }
@@ -295,6 +394,27 @@ function RangerVelger({ verdi, onVelg }: { verdi: number | null; onVelg: (n: num
       ))}
     </div>
   );
+}
+
+// Bygger en kort tekstoppsummering av registerdataene som grunnlag for AI-dypdykket.
+function lagFakta(p: Suksesshistorie, d: Dossier): string {
+  const l: string[] = [];
+  l.push(`Bransje/hovedspor: ${p.bransje}.`);
+  const aktive = d.roller.filter((r) => !r.fratraadt).slice(0, 18);
+  if (aktive.length)
+    l.push("Aktive styreverv/roller: " + aktive.map((r) => `${r.selskap ?? r.orgnr} (${r.rolle})`).join("; ") + ".");
+  if (d.holdings.length)
+    l.push("Direkte aksjeposter: " + d.holdings.slice(0, 10).map((h) => `${h.selskap}${h.verdi ? ` (~${Math.round(Number(h.verdi) / 1e6)} mill kr)` : ""}`).join("; ") + ".");
+  if (d.skatt?.formue) l.push(`Skattelistens formue (${d.skatt.aar}): ${Math.round(Number(d.skatt.formue) / 1e6)} mill kr.`);
+  if (d.porteforljeVerdi) l.push(`Estimert verdi av børsnoterte poster: ~${Math.round(d.porteforljeVerdi / 1e6)} mill kr.`);
+  if (d.metode) {
+    const m: string[] = [];
+    if (d.metode.holdingSelskaper > 0) m.push(`${d.metode.holdingSelskaper} egne selskap eier aksjer i andre selskap (holding/fritaksmetode)`);
+    if (d.metode.maksGjeldsgrad != null) m.push(`høyeste gjeldsgrad blant selskapene: ${d.metode.maksGjeldsgrad}`);
+    if (d.metode.maksEiere > 1) m.push(`flest medeiere i ett selskap: ${d.metode.maksEiere}`);
+    if (m.length) l.push("Struktur-signaler: " + m.join("; ") + ".");
+  }
+  return l.join("\n");
 }
 
 function Stat({ k, v, sub }: { k: string; v: string; sub?: string }) {

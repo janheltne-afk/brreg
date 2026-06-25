@@ -59,6 +59,20 @@ export async function GET(req: NextRequest) {
           limit 50`
       : [];
 
+    // Aksjeposter gjennom årene (selskap × år) – vises direkte på siden.
+    const historikk = sisteAar
+      ? await sql<{ orgnr: string; selskap: string; aar: number; antall: string; verdi: string | null }[]>`
+          select a.orgnr, max(a.selskap) as selskap, a.aar,
+                 sum(a.antall_aksjer)::bigint as antall,
+                 case when k.kurs is not null then (sum(a.antall_aksjer) * k.kurs)::numeric end as verdi
+          from brreg.aksjonaerer a
+          left join brreg.aksjekurs k on k.orgnr = a.orgnr and k.aar = a.aar
+          where ${aksjFilter}
+          group by a.orgnr, a.aar, k.kurs
+          order by a.orgnr, a.aar
+          limit 4000`
+      : [];
+
     // Formue/inntekt fra skattelista (nyeste år).
     const skatt = harAar
       ? await sql<{ aar: number; inntekt: string | null; formue: string | null }[]>`
@@ -109,8 +123,9 @@ export async function GET(req: NextRequest) {
       aktiveVerv,
       porteforljeVerdi: porteforljeVerdi > 0 ? porteforljeVerdi : null,
       metode,
+      historikk,
     });
   } catch {
-    return NextResponse.json({ sisteAar: null, roller: [], holdings: [], skatt: null, antallSelskaperVerv: 0, aktiveVerv: 0, porteforljeVerdi: null, metode: null });
+    return NextResponse.json({ sisteAar: null, roller: [], holdings: [], skatt: null, antallSelskaperVerv: 0, aktiveVerv: 0, porteforljeVerdi: null, metode: null, historikk: [] });
   }
 }
