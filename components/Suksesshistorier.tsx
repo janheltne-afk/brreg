@@ -30,7 +30,6 @@ export function Suksesshistorier() {
   const [laster, setLaster] = useState(false);
   const [sorterRelevans, setSorterRelevans] = useState(false);
   const [dypdykk, setDypdykk] = useState<string | null>(null);
-  const [dypdykkStatus, setDypdykkStatus] = useState<"idle" | "laster" | "feil" | "nokkel">("idle");
   const { rangering, sett } = useRangering();
 
   const treff = useMemo(() => {
@@ -79,7 +78,6 @@ export function Suksesshistorier() {
     setLaster(true);
     setDossier(null);
     setDypdykk(null);
-    setDypdykkStatus("idle");
     const ctrl = new AbortController();
     fetch(
       `/api/suksesshistorie?navn=${encodeURIComponent(valgt.navn)}&fodselsaar=${valgt.fodselsaar ?? ""}`,
@@ -101,25 +99,6 @@ export function Suksesshistorier() {
       .catch(() => {});
     return () => ctrl.abort();
   }, [valgt]);
-
-  const genererDypdykk = async () => {
-    if (!valgt) return;
-    setDypdykkStatus("laster");
-    const fakta = dossier ? lagFakta(valgt, dossier) : "";
-    try {
-      const r = await fetch("/api/suksesshistorie-dypdykk", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ navn: valgt.navn, fodselsaar: valgt.fodselsaar, bransje: valgt.bransje, fakta }),
-      });
-      if (r.status === 503) { setDypdykkStatus("nokkel"); return; }
-      const d = await r.json();
-      if (d?.tekst) { setDypdykk(d.tekst); setDypdykkStatus("idle"); }
-      else setDypdykkStatus("feil");
-    } catch {
-      setDypdykkStatus("feil");
-    }
-  };
 
   if (valgt) {
     return (
@@ -149,38 +128,13 @@ export function Suksesshistorier() {
           </div>
         </div>
 
-        {/* Utfyllende AI-profil, forankret i registerdataene */}
-        <div className="card p-5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
+        {/* Utfyllende profil (forhåndsskrevet, registerforankret) */}
+        {dypdykk && (
+          <div className="card p-5">
             <h3 className="text-sm font-semibold">Utfyllende profil</h3>
-            {dypdykkStatus !== "laster" && (
-              <button
-                onClick={genererDypdykk}
-                className="rounded-lg px-3 py-1 text-xs font-medium"
-                style={{ border: "1px solid var(--border)", color: "var(--accent)" }}
-              >
-                {dypdykk ? "Regenerer" : "Generer dypdykk (AI)"}
-              </button>
-            )}
-          </div>
-          {dypdykk ? (
             <div className="mt-3 whitespace-pre-line text-sm leading-relaxed">{dypdykk}</div>
-          ) : dypdykkStatus === "laster" ? (
-            <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>Genererer utfyllende profil… (~10–20 sek)</p>
-          ) : dypdykkStatus === "nokkel" ? (
-            <p className="mt-2 text-sm" style={{ color: "var(--accent2)" }}>
-              AI-dypdykk er ikke aktivert. Legg til miljøvariabelen <strong>ANTHROPIC_API_KEY</strong> i Vercel
-              (Settings → Environment Variables) og redeploy, så kan du generere utfyllende profiler.
-            </p>
-          ) : dypdykkStatus === "feil" ? (
-            <p className="mt-2 text-sm" style={{ color: "var(--accent2)" }}>Noe gikk galt. Prøv igjen.</p>
-          ) : (
-            <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
-              Lag en utfyllende, registerforankret profil: anslått formue, tidslinje (når de startet, vekst,
-              investorer) og hvordan de bygde det – med tydelig merkede antakelser der data mangler.
-            </p>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Nøkkeltall fra databasen */}
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -394,27 +348,6 @@ function RangerVelger({ verdi, onVelg }: { verdi: number | null; onVelg: (n: num
       ))}
     </div>
   );
-}
-
-// Bygger en kort tekstoppsummering av registerdataene som grunnlag for AI-dypdykket.
-function lagFakta(p: Suksesshistorie, d: Dossier): string {
-  const l: string[] = [];
-  l.push(`Bransje/hovedspor: ${p.bransje}.`);
-  const aktive = d.roller.filter((r) => !r.fratraadt).slice(0, 18);
-  if (aktive.length)
-    l.push("Aktive styreverv/roller: " + aktive.map((r) => `${r.selskap ?? r.orgnr} (${r.rolle})`).join("; ") + ".");
-  if (d.holdings.length)
-    l.push("Direkte aksjeposter: " + d.holdings.slice(0, 10).map((h) => `${h.selskap}${h.verdi ? ` (~${Math.round(Number(h.verdi) / 1e6)} mill kr)` : ""}`).join("; ") + ".");
-  if (d.skatt?.formue) l.push(`Skattelistens formue (${d.skatt.aar}): ${Math.round(Number(d.skatt.formue) / 1e6)} mill kr.`);
-  if (d.porteforljeVerdi) l.push(`Estimert verdi av børsnoterte poster: ~${Math.round(d.porteforljeVerdi / 1e6)} mill kr.`);
-  if (d.metode) {
-    const m: string[] = [];
-    if (d.metode.holdingSelskaper > 0) m.push(`${d.metode.holdingSelskaper} egne selskap eier aksjer i andre selskap (holding/fritaksmetode)`);
-    if (d.metode.maksGjeldsgrad != null) m.push(`høyeste gjeldsgrad blant selskapene: ${d.metode.maksGjeldsgrad}`);
-    if (d.metode.maksEiere > 1) m.push(`flest medeiere i ett selskap: ${d.metode.maksEiere}`);
-    if (m.length) l.push("Struktur-signaler: " + m.join("; ") + ".");
-  }
-  return l.join("\n");
 }
 
 function Stat({ k, v, sub }: { k: string; v: string; sub?: string }) {
