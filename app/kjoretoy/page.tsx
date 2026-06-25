@@ -6,7 +6,7 @@ export default function KjoretoyPage() {
       <div>
         <h2 className="text-lg font-semibold">Kjøretøy i Norge</h2>
         <p className="text-sm" style={{ color: "var(--muted)" }}>
-          Registrerte kjøretøy etter merke og kjøretøygruppe. Kilde: SSB (åpne data). Antall, ikke eiere.
+          Registrerte kjøretøy etter merke, drivstofftype og kommune. Kilde: SSB (åpne data). Antall, ikke eiere.
         </p>
       </div>
       <Kjoretoy />
