@@ -22,3 +22,11 @@ CREATE TABLE IF NOT EXISTS brreg.kjoretoy_drivstoff (
     antall      BIGINT,
     PRIMARY KEY (region_kode, gruppe, drivstoff, aar)
 );
+
+-- Kjøretøy etter merke PER region/kommune (SSB 07832, alle regioner). Gjør at
+-- merke-fordelingen kan filtreres på kommune. Fylles av
+-- tools/load-kjoretoy-merke-region.py.
+CREATE TABLE IF NOT EXISTS brreg.kjoretoy_merke (
+    region_kode TEXT, region TEXT, merke TEXT, gruppe TEXT, aar INT, antall BIGINT,
+    PRIMARY KEY (region_kode, merke, gruppe, aar)
+);
