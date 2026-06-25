@@ -316,4 +316,409 @@ Slik bygde hun det: Omdannet en operativ forbruksvareformue til en bred invester
 Vurdering: Trolig et generasjonsskifte der en industriarv er konvertert til en diversifisert, eiendomstung investeringsformue.
 """,
 
+"Svein Støle": """
+Anslått formue: anslagsvis 4–7 mrd kr.
+
+Tidslinje: Grunnla og bygde meglerhuset og investeringsbanken Pareto fra 1980–90-tallet til et av Norges ledende uavhengige finanshus – megling, kapitalforvaltning og prosjektfinansiering, særlig mot shipping, eiendom og energi.
+
+Slik bygde han det: Eier av Pareto-konsernet; formuen kommer fra honorarer, tilrettelegging og egne investeringer i prosjektene Pareto strukturerer. Modellen kombinerer rådgivning med å plassere egen og kunders kapital i samme prosjekter.
+
+Vurdering: Sannsynligvis en som bygde varig formue på å være tilrettelegger og medinvestor i norsk shipping- og eiendomsfinans.
+""",
+
+"Jan Petter Collier": """
+Anslått formue: anslagsvis 2–4 mrd kr.
+
+Tidslinje: Medgrunnlegger av ABG Sundal Collier, et ledende nordisk investeringsbank- og meglerhus, fra 1980–90-tallet.
+
+Slik bygde han det: Eierandel i meglerhuset gjennom en lang vekstperiode i det norske kapitalmarkedet – inntekter fra corporate finance, aksjehandel og tilrettelegging.
+
+Vurdering: Trolig en finansbygger som høstet av framveksten av et profesjonelt norsk kapitalmarked.
+""",
+
+"Ole Ertvaag": """
+Anslått formue: anslagsvis 3–6 mrd kr.
+
+Tidslinje: Grunnla private equity-selskapet HitecVision i Stavanger, en ledende energirettet PE-aktør på norsk sokkel (olje, gass, nå også energiomstilling).
+
+Slik bygde han det: Reiser fond fra institusjonelle investorer, kjøper og bygger energiselskaper med giring, og selger/børsnoterer. Formuen kommer fra carry og eierandeler i forvaltningsselskapet.
+
+Vurdering: Sannsynligvis Stavangers fremste finansmiljøbygger – PE-modellen anvendt på energisektoren.
+""",
+
+"Bjørn Rune Gjelsten": """
+Anslått formue: anslagsvis 5–9 mrd kr.
+
+Tidslinje: Lenge partner med Røkke i Aker/RGI-systemet på 1990-tallet, deretter selvstendig via Gjelsten Holding.
+
+Slik bygde han det: Bred investor med interesser i eiendom, industri, shipping og sport (tidligere eier av Wimbledon/MK Dons). Aktivt eierskap via holdingstruktur, med både egne og lånte midler.
+
+Vurdering: Trolig en bredt diversifisert industrinvestor formet av Aker-skolen.
+""",
+
+"Tor Olav Trøim": """
+Anslått formue: anslagsvis 4–8 mrd kr.
+
+Tidslinje: Lenge Fredriksens nære medspiller og arkitekt bak børsnoteringer som Seadrill og Golar. Driver i dag eget miljø (Magni Partners) med tunge poster i bl.a. Borr Drilling, Valaris og Golar LNG.
+
+Slik bygde han det: Syklisk offshore/energi-investering med høy giring og hyppig bruk av kapitalmarkedene for å hente ekstern kapital – samme skole som Fredriksen, nå i egen regi.
+
+Vurdering: Sannsynligvis en av Norges mest kapitalmarkedsdrevne investorer – bygger og refinansierer selskaper i offshore og energi.
+""",
+
+"Arne Fredly": """
+Anslått formue: anslagsvis 3–6 mrd kr.
+
+Tidslinje: Selvstendig investor og trader som bygde formue på egenhandel fra 1990-/2000-tallet, med konsentrerte posisjoner i eiendom, shipping og industri.
+
+Slik bygde han det: Ofte motsykliske, konsentrerte veddemål i børsnoterte selskaper, kombinert med aktivt eierskap og styreplasser. Bruker holdingselskaper og tidvis giring.
+
+Vurdering: Trolig en utpreget «trader-investor» som tjener på timing og store, upopulære posisjoner.
+""",
+
+"Jens Ulltveit-Moe": """
+Anslått formue: i sine siste år anslagsvis 1–3 mrd kr (etter tunge tap i fornybar/biodrivstoff).
+
+Tidslinje: Bygde industrikonglomeratet Umoe fra 1980-tallet – oljeservice, restaurant (bl.a. via investeringer), fornybar energi og industri. Tidligere NHO-president. Døde i 2023.
+
+Slik bygde han det: Aktivt, gjeldsfinansiert industribyggeri via Umoe-holding; satset stort på fornybar energi og biodrivstoff, der deler av formuen senere gikk tapt.
+
+Vurdering: Sannsynligvis en idealistisk industribygger som tok store, til dels tapsbringende, langsiktige veddemål på det grønne skiftet.
+""",
+
+"Arthur Buchardt": """
+Anslått formue: anslagsvis 1–3 mrd kr.
+
+Tidslinje: Bygde seg opp som entreprenør og eiendoms-/hotellutvikler, med en rekke prosjekter i Norden (hoteller, næringsbygg, idrettsanlegg).
+
+Slik bygde han det: Prosjektutvikling – identifiserer, bygger og finansierer eiendomsprosjekter, ofte med partnere og gjeld, og realiserer verdier ved ferdigstillelse/salg.
+
+Vurdering: Trolig en klassisk prosjektmaker som tjener på utvikling mer enn på langsiktig eie.
+""",
+
+"Ola Braanaas": """
+Anslått formue: anslagsvis 3–6 mrd kr.
+
+Tidslinje: Grunnla og eier oppdrettsselskapet Firda Seafood i Sogn og Fjordane fra 1980-tallet.
+
+Slik bygde han det: Bygde lakseformue på oppdrettskonsesjoner og produksjon – verdien ligger i konsesjonene og biomassen, i stor grad familieeid og egenfinansiert. Kjent for tydelige meninger om havbrukspolitikk.
+
+Vurdering: Sannsynligvis en typisk konsesjonsdrevet oppdrettsformue – store verdier bygd på tilgang til sjøareal og effektiv drift.
+""",
+
+"Inge Berg": """
+Anslått formue: anslagsvis 8–15 mrd kr.
+
+Tidslinje: Grunnla og bygde oppdrettskonsernet Nordlaks i Vesterålen til en av Norges største familieeide lakseprodusenter, kjent for «Havfarm»-konseptet (store havmerder).
+
+Slik bygde han det: Vertikal integrasjon (oppdrett, slakteri, foredling) og store investeringer i ny teknologi, i hovedsak familieeid og finansiert med kontantstrøm og gjeld.
+
+Vurdering: Trolig en av de mest industrielt ambisiøse oppdretterne – satser tungt på teknologi og oppstrøms kontroll.
+""",
+
+"Gustav Magnar Witzøe": """
+Anslått formue: anslagsvis 15–25 mrd kr (svinger med lakseprisen og SalMar-kursen).
+
+Tidslinje: SalMar ble grunnlagt på Frøya i 1991 og bygd til en av verdens største lakseprodusenter. Eierskapet er i stor grad overført til neste generasjon, som er blant Norges yngste storformuer.
+
+Slik bygde de det: Industriell oppdrett med kostnadsledelse og oppkjøp, børsnotert SalMar som henter ekstern kapital, mens familien beholder kontroll via holding (Kverva). Fritaksmetoden gjør utbytte/gevinst mellom selskapene effektivt.
+
+Vurdering: Sannsynligvis en av de reneste «konsesjon + skala + børs»-formuene i norsk sjømat, med kontrollert generasjonsskifte.
+""",
+
+"Per Sævik": """
+Anslått formue: Sævik/Havila-familiens formue anslås til anslagsvis 3–6 mrd kr.
+
+Tidslinje: Bygde Havila-systemet på Sunnmøre fra fiskeri til offshore-fartøy, ferger og shipping, over flere tiår.
+
+Slik bygde han det: Familieeid maritimt konsern med flere ben (offshore supply, ferger via Havila Kystruten, shipping); finansiert med gjeld og enkelte børsnoteringer. Offshore-delen har gått gjennom tunge sykluser.
+
+Vurdering: Trolig en utholdende maritim familiebygger med dype røtter i kystnæringen.
+""",
+
+"Kristian Adolfsen": """
+Anslått formue: Adolfsen-brødrenes formue anslås samlet til anslagsvis 8–15 mrd kr.
+
+Tidslinje: Bygde sammen med broren Roger Adolfsen-gruppen innen privat helse og omsorg (barnehager via bl.a. tidligere Norlandia, sykehjem), hotell og eiendom.
+
+Slik bygde de det: Vekst gjennom oppkjøp i velferdssektoren (barnehager/omsorg) og hotell, finansiert med gjeld og eiendom, organisert i en bred holdingstruktur. Avhengig av offentlige kontrakter i velferdsdelen.
+
+Vurdering: Sannsynligvis et eksempel på «velferd + eiendom»-bygging – skalering av tjenester med offentlig finansiering kombinert med eiendomsverdier.
+""",
+
+"Roger Adolfsen": """
+Anslått formue: del av Adolfsen-formuen, samlet anslagsvis 8–15 mrd kr.
+
+Tidslinje: Medbygger av Adolfsen-gruppen sammen med broren Kristian – helse/omsorg, barnehager, hotell og eiendom.
+
+Slik bygde de det: Samme modell som broren: oppkjøpsdrevet vekst i velferd og hotell, finansiert med gjeld og eiendom, i en bred familieeid struktur.
+
+Vurdering: Trolig en operativ medbygger i et av Nordens største private velferds- og hotellkonsern.
+""",
+
+"Bjørn Dæhlie": """
+Anslått formue: anslagsvis 1–2 mrd kr.
+
+Tidslinje: Tidenes vinter-OL-vinner i langrenn; etter karrieren bygde han formue på eiendom, klesmerket Dæhlie og investeringer.
+
+Slik bygde han det: Konverterte idretts- og sponsorinntekter til en investeringsportefølje tungt vektet mot eiendom, samt en sportsmerkevare. Aktiv, langsiktig forvaltning via egne selskaper.
+
+Vurdering: Sannsynligvis en av de mest vellykkede norske idrettsutøverne kommersielt – disiplinert reinvestering i eiendom.
+""",
+
+"Bjørn Maaseide": """
+Anslått formue: anslagsvis 0,5–1,5 mrd kr.
+
+Tidslinje: Tidligere toppspiller i sandvolleyball; bygde etter karrieren treningskjede-, eiendoms- og investeringsvirksomhet.
+
+Slik bygde han det: Kombinerer treningssenter-/helsekonsept med eiendom og investeringer via egne selskaper – idrettsmerkevare omsatt til forretning.
+
+Vurdering: Trolig en idrettsutøver som tidlig bygde en operativ forretning fremfor bare å forvalte inntekter.
+""",
+
+"Christen Sundt": """
+Anslått formue: anslagsvis 3–6 mrd kr.
+
+Tidslinje: Viderefører Sundt-formuen via investeringsselskapet Sundt AS, med lange røtter i norsk shipping og industri.
+
+Slik bygde han det: Bred finansiell portefølje – børsnoterte poster, eiendom og unoterte selskaper – forvaltet langsiktig via holdingstruktur (fritaksmetoden). Lav profil utad.
+
+Vurdering: Sannsynligvis en diskret, langsiktig familieformue forvaltet som et bredt investeringsselskap.
+""",
+
+"Arne Blystad": """
+Anslått formue: anslagsvis 3–6 mrd kr. Shippinginvestor via Blystad-gruppen med posisjoner i tank, gass og tørrlast, samt biotek og finans. Bygde formuen på syklisk shipping-timing og aktivt eierskap, ofte med giring og børsnoterte strukturer. Trolig en klassisk kontrarisk shippinginvestor som kjøper i nedturer.
+""",
+"Ketil Skorstad": """
+Anslått formue: anslagsvis 2–4 mrd kr. Medgrunnlegger av forvaltningsmiljøene Tigerstaden/Sector og senere familiekontoret Tudor. Formuen kom fra kapitalforvaltning (honorarer og avkastning på ekstern kapital) og egne investeringer i bl.a. eiendom og børsaksjer. Sannsynligvis en forvalter som konverterte honorarinntekter til en egen investeringsportefølje.
+""",
+"Tore Aksel Voldberg": """
+Anslått formue: anslagsvis 1–3 mrd kr. Lavprofilert investor og trader som bygde formue på langsiktig egenhandel i aksjemarkedet, ofte med konsentrerte posisjoner. Trolig en disiplinert «stille» investor som har latt avkastningen forrente seg over tid via egne selskaper.
+""",
+"Harald Espedal": """
+Anslått formue: anslagsvis 1–2 mrd kr. Tidligere sjef i Skagenfondene, nå selvstendig via Espedal & Co og Salt Value. Formuen er bygd på fondsforvaltning og egne, verdiorienterte aksjeinvesteringer. Sannsynligvis en utpreget verdiinvestor som forvalter både egen og andres kapital.
+""",
+"Kristian Falnes": """
+Anslått formue: anslagsvis 1–2 mrd kr. Legendarisk forvalter fra Skagenfondene, kjent for langsiktig verdiinvestering. Forvalter i dag i hovedsak egen kapital i børsnoterte selskaper. Trolig en av Norges dyktigste rene aksjeplukkere, med formue bygd på avkastning over mange år.
+""",
+"Anders Onarheim": """
+Anslått formue: anslagsvis 1–2 mrd kr. Investor og styreprofesjonell med bakgrunn fra meglerhus (bl.a. Carnegie). Aktiv eier og styremedlem i selskaper innen finans, shipping og industri. Sannsynligvis en som kombinerer finansiell kompetanse med aktivt eierskap i utvalgte selskaper.
+""",
+"Jostein Eikeland": """
+Anslått formue: svært variabel; tidvis milliardær, tidvis store tap. Serieentreprenør i teknologi og energi, bl.a. batteriselskapet Alevo (som gikk konkurs) og senere energisatsinger. Høyrisikoprofil med bruk av ekstern kapital. Trolig en utpreget høyrisiko-gründer der formuen har svingt dramatisk.
+""",
+"Morten Klein": """
+Anslått formue: anslagsvis 1–3 mrd kr. Investor med tyngde i spill-/gamingselskaper (bl.a. iGaming) og børsnoterte vekstselskaper. Bygde formue på tidlige posisjoner i gaming og aktiv handel via egne selskaper. Sannsynligvis en sektorspesialist som traff gaming-bølgen tidlig.
+""",
+"Jan Haudemann-Andersen": """
+Anslått formue: anslagsvis 4–7 mrd kr. Investor via Datum-systemet, kjent for tidlige og konsentrerte posisjoner i teknologi- og vekstselskaper på Oslo Børs. Bygde formue på langsiktig aksjeinvestering, ofte i selskaper han følger tett. Trolig en av de mest tålmodige norske vekstaksje-investorene.
+""",
+"Olav Nils Sunde": """
+Anslått formue: anslagsvis 2–4 mrd kr. Bygde O.N. Sunde-konsernet med interesser i shipping (bilfrakt), handel (tidligere eier av retail-kjeder) og eiendom. Bredt diversifisert, familieeid holdingstruktur. Sannsynligvis en diversifisert konsernbygger som balanserer shipping, handel og eiendom.
+""",
+"Torstein Tvenge": """
+Anslått formue: anslagsvis 3–6 mrd kr. Lavprofilert eiendoms- og aksjeinvestor som har bygd betydelig formue på næringseiendom og langsiktige børsposisjoner. Trolig en av de mest diskré, men konsistente, langsiktige investorene – verdier bygd stille over tiår.
+""",
+"Ivar Koteng": """
+Anslått formue: anslagsvis 2–4 mrd kr. Trondheimsbasert eiendomsinvestor, også kjent som tidligere styreleder/eier i Rosenborg. Bygde formue på næringseiendom i Trøndelag, finansiert med gjeld og langsiktig eie. Sannsynligvis en regional eiendomsbygger med tålmodig kapital.
+""",
+"Edgar Haugen": """
+Anslått formue: anslagsvis 3–6 mrd kr. Eiendomsinvestor via Ragde Eiendom med en stor portefølje nærings- og boligeiendom i Oslo-området. Bygde formuen gjennom oppkjøp og utvikling, finansiert med gjeld. Trolig en aktiv oppkjøper som har bygd skala i Oslo-eiendom.
+""",
+"Egil Stenshagen": """
+Anslått formue: anslagsvis 1–3 mrd kr. Investor med interesser i bilimport/-forhandling, eiendom og børsnoterte selskaper, bygd opp over flere tiår via egne selskaper. Sannsynligvis en bredt sammensatt formue fra handel, bil og eiendom.
+""",
+"Carl Erik Krefting": """
+Anslått formue: anslagsvis 2–4 mrd kr. Eiendomsinvestor via Carucel, kjent for utvikling av næringseiendom i Oslo. Bygde formue på kjøp, utvikling og salg av eiendom. Trolig en utviklingsorientert eiendomsaktør som tjener på transformasjon av bygg og tomter.
+""",
+"Ståle Kyllingstad": """
+Anslått formue: anslagsvis 3–6 mrd kr. Bygde industrikonsernet IKM Gruppen innen olje- og gassrelaterte tjenester på Vestlandet. Klassisk oljeservice-bygger, i hovedsak privateid og finansiert med kontantstrøm og gjeld. Sannsynligvis en industriell tjenestebygger tett på oljesektoren.
+""",
+"Bjarne Skeie": """
+Anslått formue: anslagsvis 2–5 mrd kr (svinger med energi). Industribygger fra Kristiansand innen oljeservice og boreteknologi, med reinvesteringer i teknologi og energi via Skeie-systemet. Trolig en oppfinnsom industribygger som høstet av norsk offshore-kompetanse.
+""",
+"Geir Førre": """
+Anslått formue: anslagsvis 1–3 mrd kr. Serieentreprenør i halvledere: grunnla Chipcon (solgt til Texas Instruments) og Energy Micro (solgt til Silicon Labs), og reinvesterer i teknologiselskaper. Sannsynligvis en av Norges fremste dyp-teknologigründere med flere internasjonale exits.
+""",
+"Bård Eker": """
+Anslått formue: anslagsvis 1–3 mrd kr. Industridesigner og gründer bak Eker Design, med bidrag til bl.a. Hydrolift-båter og Koenigsegg-superbiler, samt teknologiinvesteringer. Trolig en som har omsatt designkompetanse til eierandeler i industri og teknologi.
+""",
+"Atle Eide": """
+Anslått formue: anslagsvis 1–3 mrd kr. Sentral leder og eier i norsk oppdrett (bl.a. tidligere konsernsjef i Pan Fish/Marine Harvest-sfæren) og aktiv investor/styreprofil i sjømat og teknologi. Sannsynligvis en industriell sjømatleder som også investerer bredt.
+""",
+"Helge Gåsø": """
+Anslått formue: anslagsvis 4–8 mrd kr. Trøndersk sjømat- og shippinginvestor (Frøy-systemet), med tyngde i oppdrettsservice-fartøy og oppdrett. Bygde formue på vekst i havbruksnæringen, med børsnotering og oppkjøp som verktøy. Trolig en som bygde en hel verdikjede rundt havbruksservice.
+""",
+
+"Roger Hofseth": """
+Anslått formue: anslagsvis 1–3 mrd kr (usikkert; kapitalintensiv satsing). Eier Hofseth-konsernet på Sunnmøre innen lakseforedling og sjømat, med ambisjoner innen marin bioteknologi og full råstoffutnyttelse. Trolig en industriell foredlingsbygger som satser tungt på videreforedling fremfor bare oppdrett.
+""",
+"Frode Teigen": """
+Anslått formue: anslagsvis 3–6 mrd kr. Investor med tunge poster i sjømat (oppdrett), børsnoterte selskaper og eiendom, via egne holdingselskaper. Sannsynligvis en aktiv investor som tar store enkeltposisjoner, særlig i sjømat.
+""",
+"Per Grieg": """
+Anslått formue: Grieg-familiens formue anslås til anslagsvis 5–10 mrd kr. Sentral i Grieg-gruppen i Bergen: oppdrett (Grieg Seafood), shipping (Grieg Star/G2 Ocean) og logistikk. Bred maritim familieformue med børsnotert oppdrett og privateid shipping. Trolig en klassisk bergensk handels- og rederifamilie modernisert mot havbruk.
+""",
+"Trygve Seglem": """
+Anslått formue: anslagsvis 3–6 mrd kr. Bygde rederiet Knutsen OAS Shipping i Haugesund, spesialisert på bøyelast- og gasstankskip (shuttle-tankere, LNG), med langsiktige kontrakter. Familieeid shippingformue. Sannsynligvis en nisjereder som bygde verdier på spesialiserte skip og solide befraktningskontrakter.
+""",
+"Bjørn Tore Larsen": """
+Anslått formue: usikkert; verdiene er knyttet til umodne satsinger. Gründer og sjef i el-flyselskapet Heart Aerospace, og tidligere bygger av maritim bemanning/shipping (OSM). Satser på elektrifisering av kortbanefly med ekstern risikokapital. Trolig en gründer i en tidlig, kapitalkrevende vekstfase.
+""",
+"Knut Ugland": """
+Anslått formue: Ugland-familiens formue anslås til anslagsvis 3–6 mrd kr. Del av en av Norges eldste rederifamilier (J.J. Ugland) fra Grimstad, med shipping, offshore og industri. Familieeid, lavt profilert, finansiert med egen kontantstrøm. Sannsynligvis en utholdende familiereder med diversifisert maritim virksomhet.
+""",
+"Morten Høegh": """
+Anslått formue: Höegh-familiens formue anslås til anslagsvis 5–10 mrd kr. Del av Höegh-familien (Leif Höegh & Co), med tyngde i bilfrakt (Höegh Autoliners) og gass (Höegh LNG/Evolution). Kombinerer familiekontroll med børsnoteringer som henter ekstern kapital. Trolig en moderne videreføring av en klassisk shippingformue mot energi og bilfrakt.
+""",
+"Peder Smedvig": """
+Anslått formue: Smedvig-familiens formue anslås til anslagsvis 4–8 mrd kr. Viderefører Smedvig-formuen fra Stavanger, opprinnelig shipping og oljerigger (Smedvig Offshore), nå investeringer i eiendom, energi og finans via familiekontor. Sannsynligvis en omstilt offshoreformue forvaltet som et bredt investeringsselskap.
+""",
+"Bjørn Risa": """
+Anslått formue: anslagsvis 1–3 mrd kr. Bygde entreprenør- og anleggskonsernet Risa på Jæren til en stor regional aktør innen vei, anlegg og masseforflytning. Trolig en klassisk anleggsbygger som vokste med norsk samferdselsutbygging.
+""",
+"Olav Stangeland": """
+Anslått formue: anslagsvis 2–4 mrd kr. Eier og leder av Stangeland Maskin på Jæren, en av Norges største maskinentreprenører, med tilhørende eiendom. Familieeid, bygd på store anleggsoppdrag. Sannsynligvis en av landets fremste maskinentreprenører, vokst med infrastrukturprosjekter.
+""",
+"Atle Berge": """
+Anslått formue: anslagsvis 1–3 mrd kr. Bygde industri- og byggkonsernet Ott (betongelement/prefab m.m.) med vekt på industriell byggproduksjon. Trolig en industriell byggbygger som tjener på prefabrikkert produksjon.
+""",
+"Tor Dagfinn Veen": """
+Anslått formue: anslagsvis 1–3 mrd kr. Investor med interesser i bilforhandlervirksomhet og eiendom, bygd opp via familieeide selskaper. Sannsynligvis en bil- og eiendomsformue bygd over tid i en familiestruktur.
+""",
+"Karl Munthe-Kaas": """
+Anslått formue: usikkert; verdien følger Oda-verdsettelsen, som har falt fra toppnivå. Medgrunnlegger og leder av netthandels-dagligvaren Oda (tidl. Kolonial.no). Bygde med tung ekstern venture-kapital for å finansiere vekst og automatlager. Trolig en gründer der formuen i stor grad er papirverdi knyttet til et kapitalkrevende vekstselskap.
+""",
+"Dag Kittlaus": """
+Anslått formue: anslagsvis 0,5–1,5 mrd kr. Norsk-amerikansk gründer som skapte taleassistenten Siri (solgt til Apple) og senere AI-selskapet Viv (solgt til Samsung). Formuen kom fra to exits til teknologigiganter. Sannsynligvis en AI-pioner som bygde og solgte banebrytende produkter tidlig.
+""",
+"Tellef Thorleifsson": """
+Anslått formue: anslagsvis 0,5–1,5 mrd kr. Medgrunnlegger av venturefondet Northzone (tidlig investor i bl.a. Spotify), senere leder av Norfund. Formuen kom fra carry og eierandeler i et ledende nordisk venturefond. Trolig en av Nordens mest erfarne tidligfase-investorer.
+""",
+"Are Traasdahl": """
+Anslått formue: anslagsvis 0,5–1,5 mrd kr. Serieentreprenør: grunnla mobil-adtech-selskapet Tapad (solgt til Telenor) og senere supply chain-selskapet Crisp i USA. Bygde med amerikansk venture-kapital og solgte. Sannsynligvis en internasjonal gründer med exit-drevet formue.
+""",
+"Jens Rugseth": """
+Anslått formue: anslagsvis 1–3 mrd kr. Serieentreprenør og investor i IT-tjenester; medgrunnlegger av bl.a. Crayon og en rekke teknologiselskaper. Aktiv eier og styreprofil. Trolig en IT-tjenestebygger som har bygd og børsnotert flere selskaper.
+""",
+"Rune Syversen": """
+Anslått formue: anslagsvis 0,5–1,5 mrd kr. Medgrunnlegger og leder av IT-konsulentkonsernet Crayon, en stor nordisk aktør innen programvare- og skyrådgivning, børsnotert i Oslo. Sannsynligvis en som bygde skala i programvarerådgivning og hentet vekstkapital via børs.
+""",
+"Morten Lund": """
+Anslått formue: svært variabel; kjent for både store gevinster og konkurser. Serieinvestor og gründer kjent for tidlige veddemål på teknologi (bl.a. Skype-miljøet) og Tradeshift. Høyrisikoprofil med andres og egen kapital. Trolig en utpreget høyrisiko-venture-gründer.
+""",
+"Martin Ødegaard": """
+Anslått formue: voksende; årlige inntekter i titalls-/hundremillionersklassen, formue trolig flere hundre mill og økende. Landslagskaptein og Arsenal-spiller som kanaliserer lønn og sponsorinntekter inn i investeringer og eiendom via egne selskaper. Trolig en idrettsformue i tidlig oppbyggingsfase.
+""",
+"Viktor Hovland": """
+Anslått formue: voksende; betydelige premie- og sponsorinntekter. En av verdens beste golfspillere, med inntekter forvaltet via egne selskaper. Sannsynligvis en idrettsformue der det meste ennå er i opptjenings- og plasseringsfasen.
+""",
+"Casper Ruud": """
+Anslått formue: voksende; premie- og sponsorinntekter på toppnivå. Norges fremste tennisspiller gjennom tidene, med tennisakademi og egne selskaper. Trolig en idrettsformue kombinert med en spirende akademi-/merkevareforretning.
+""",
+"Aksel Lund Svindal": """
+Anslått formue: anslagsvis 0,3–0,8 mrd kr. Alpinlegende som etter karrieren har bygd en portefølje av investeringer og styreverv, særlig i teknologi og merkevare. Sannsynligvis en idrettsutøver som bevisst har bygd investor- og styrekompetanse.
+""",
+"Alan Walker": """
+Anslått formue: anslagsvis 0,3–0,8 mrd kr. Global elektronisk artist («Faded») med enorme streamingtall, som bygger formue på musikk, merch og digital tilstedeværelse via egne selskaper. Trolig en ung artist med en skalerbar digital merkevare.
+""",
+
+"Morten Harket": """
+Anslått formue: anslagsvis 0,3–0,7 mrd kr. Vokalist i a-ha, en av Norges mest suksessrike musikkeksporter gjennom tidene, med varige inntekter fra musikk og rettigheter. Trolig en formue bygd på et globalt populært musikkatalog over flere tiår.
+""",
+"Magne Furuholmen": """
+Anslått formue: anslagsvis 0,3–0,7 mrd kr. Medlem av a-ha (låtskriver bak «Take On Me») og anerkjent billedkunstner. Inntekter fra musikkrettigheter og kunst. Sannsynligvis en kombinert musikk- og kunstformue, drevet av et av verdens mest spilte poplåtskap.
+""",
+"Pål Waaktaar-Savoy": """
+Anslått formue: anslagsvis 0,3–0,7 mrd kr. Gitarist og hovedlåtskriver i a-ha, med varige inntekter fra et svært mye spilt popkatalog. Trolig en låtskriver-formue der royalties fra evergreen-låter gir jevn avkastning.
+""",
+"Jan Thomas": """
+Anslått formue: anslagsvis 0,1–0,4 mrd kr. Make-up-artist og TV-personlighet som har bygd en merkevare innen skjønnhetsprodukter og media rundt sitt eget navn. Sannsynligvis en personmerkevare omsatt til produkter og medieinntekter.
+""",
+"Terje Høili": """
+Anslått formue: anslagsvis 1–2 mrd kr. Bygde formue på handel og varedistribusjon via egne selskaper, med tilhørende eiendom. Trolig en handelsformue der overskudd gradvis er reinvestert i eiendom.
+""",
+"Einar Øgrey Brandsdal": """
+Anslått formue: anslagsvis 1–3 mrd kr. Gründer av netthandelsselskapet Brandsdal (Cocopanda, blivakker.no), bygd til en stor nordisk e-handelsaktør innen skjønnhet og forbruksvarer. Sannsynligvis en e-handelsbygger som vokste på effektiv netthandel og markedsføring.
+""",
+"Geir Hove": """
+Anslått formue: anslagsvis 0,3–1 mrd kr (usikkert). Bygde restaurant- og franchisevirksomhet i Norge. Trolig en operativ restaurant-/franchisebygger; den konkrete strukturen fremgår av selskapsdataene under.
+""",
+"Silje Landevåg": """
+Anslått formue: usikkert. Gründer innen netthandel/retail. Den konkrete selskapsstrukturen og verdiene fremgår best av registerdataene under; profilen her er begrenset av offentlig tilgjengelig informasjon.
+""",
+"Rune Arnhoff": """
+Anslått formue: anslagsvis 0,5–1,5 mrd kr (usikkert). Investor og eier med interesser i handel og industri, bygd opp via egne selskaper. Selskapsstrukturen under viser den konkrete porteføljen.
+""",
+"Endre Røsjø": """
+Anslått formue: anslagsvis 2–4 mrd kr. Eiendoms- og finansinvestor med base i Oslo, kjent for næringseiendom og langsiktige investeringer via egne selskaper. Trolig en eiendomsdrevet formue kombinert med finansielle posisjoner.
+""",
+"Runar Vatne": """
+Anslått formue: anslagsvis 3–6 mrd kr. Bygde eiendomsformue via Vatne Property med en stor portefølje av nærings- og handelseiendom, særlig i Oslo. Sannsynligvis en aktiv oppkjøper som har bygd skala i sentral eiendom med giring.
+""",
+"Ola Mæle": """
+Anslått formue: anslagsvis 2–4 mrd kr. Investor og eiendomsutvikler med bred portefølje innen eiendom, finans og industri, bygd via egne selskaper. Trolig en bredt diversifisert eiendoms- og industriinvestor.
+""",
+"Espen Galtung Døsvig": """
+Anslått formue: anslagsvis 1–3 mrd kr. Bergensbasert investor og eiendomsutvikler med interesser i eiendom og børsnoterte selskaper. Sannsynligvis en regional eiendoms- og finansinvestor.
+""",
+"Jan Petter Sissener": """
+Anslått formue: anslagsvis 0,5–1,5 mrd kr. Profilert forvalter og investor; grunnla Sissener AS og hedgefondet Sissener Canopus. Kjent markedskommentator. Trolig en forvalter som bygde formue på honorarer og egne posisjoner, samt synlighet i mediene.
+""",
+"Katharina Andresen": """
+Anslått formue: andel av Ferd-formuen, samlet familieformue anslagsvis 30–40 mrd kr. Medeier i familieselskapet Ferd sammen med søsteren, etter overføring fra faren Johan H. Andresen. En av Norges yngste storformuer, knyttet til Tiedemanns-arven. Trolig et bevisst, tidlig generasjonsskifte for å sikre videreføring.
+""",
+"Alexandra Andresen": """
+Anslått formue: andel av Ferd-formuen, samlet familieformue anslagsvis 30–40 mrd kr. Medeier i Ferd sammen med søsteren Katharina; tidligere internasjonal topprytter. Formuen er knyttet til familiens eierskap i investeringsselskapet Ferd. Sannsynligvis en passiv, men betydelig, eierandel i et profesjonelt forvaltet selskap.
+""",
+"Petter Varner": """
+Anslått formue: Varner-familiens formue anslås til anslagsvis 5–10 mrd kr. Del av familien bak Varner-gruppen (Dressmann, Cubus, Bik Bok, Carlings), en av Nordens største motekjedekonsern bygd av faren Frank Varner. Familieeid og i hovedsak egenfinansiert. Trolig en klassisk retail-familieformue under press fra netthandel.
+""",
+"Johan Brand": """
+Anslått formue: usikkert; knyttet til Kahoot-verdsettelsen. Medgrunnlegger av Kahoot, den globale spillbaserte læringsplattformen. Bygde med ekstern vekstkapital og børsnotering. Trolig en gründerformue der mye er knyttet til kursutviklingen i et edtech-selskap.
+""",
+"Åsmund Furuseth": """
+Anslått formue: usikkert; knyttet til Kahoot. Medgrunnlegger av Kahoot, sentral i å bygge læringsplattformen til en global tjeneste med titalls millioner brukere. Sannsynligvis en medgründer-formue knyttet til edtech-veksten.
+""",
+"Morten Versvik": """
+Anslått formue: usikkert; knyttet til Kahoot. Medgrunnlegger av Kahoot og del av gründerteamet bak den spillbaserte læringsplattformen. Trolig en teknisk medgründer med eierandel i et globalt edtech-selskap.
+""",
+"Alf Inge Wang": """
+Anslått formue: usikkert; knyttet til Kahoot. Professor ved NTNU og medgrunnlegger av Kahoot; den akademiske opphavsmannen bak konseptet for spillbasert læring. Sannsynligvis en akademisk gründer med eierandel fra kommersialisering av forskning.
+""",
+"Magnus Haug Wanberg": """
+Anslått formue: usikkert; knyttet til vekstselskaper. Ung gründer bak teknologiselskaper innen hardware (reMarkable-sfæren), kjent for å bygge globale produkter fra Norge. Trolig en gründerformue tett knyttet til verdsettelsen av et hardware-vekstselskap.
+""",
+"Henrik Müller-Hansen": """
+Anslått formue: usikkert; knyttet til Gelato-verdsettelsen. Grunnla e-handels-/print-on-demand-plattformen Gelato, bygd til en global aktør for distribuert produksjon og logistikk med tung venture-kapital. Trolig en gründer der formuen er papirverdi i et kapitalfinansiert vekstselskap.
+""",
+"Anita Schjøll Brede": """
+Anslått formue: usikkert/ trolig beskjeden i formuessammenheng. Gründer av AI-selskapet Iris.ai, som bruker kunstig intelligens for å strukturere vitenskapelig forskning. Internasjonalt profilert teknologigründer. Verdien er knyttet til et tidligfase AI-selskap.
+""",
+"Christine Spiten": """
+Anslått formue: usikkert/ trolig beskjeden i formuessammenheng. Medgrunnlegger av Blueye Robotics (undervannsdroner), profilert innen havteknologi og kvinnelig entreprenørskap. Verdien er knyttet til et tidligfase teknologiselskap.
+""",
+"Håkon Wium Lie": """
+Anslått formue: anslagsvis 0,1–0,4 mrd kr. Oppfinneren av CSS, en grunnstein i moderne web, og lenge teknologidirektør i Opera. Formuen er i stor grad knyttet til Opera-eierskap og web-pionerrollen. Trolig en teknologiformue bygd på tidlig eierskap i et globalt programvareselskap.
+""",
+"Jan Grønbech": """
+Anslått formue: anslagsvis 0,1–0,5 mrd kr (usikkert). Tidligere mangeårig Norgessjef i Google, senere investor og styreprofil i teknologiselskaper. Sannsynligvis en formue bygd på lederlønn/opsjoner og senere teknologiinvesteringer.
+""",
+"Erik Haugane": """
+Anslått formue: anslagsvis 0,5–1,5 mrd kr. Oljepioner som var med å bygge letevirksomheten Det norske oljeselskap (forløper til Aker BP) og senere nye energiselskaper. Kjent for å utfordre de store på sokkelen. Trolig en formue bygd på å skape og selge/utvikle leteselskaper.
+""",
+
+"Kjetil Strand": """
+Anslått formue: usikkert. Eiendomsinvestor med portefølje innen nærings- og boligeiendom. Den konkrete selskapsstrukturen og verdiene fremgår best av registerdataene under; profilen her er begrenset av offentlig tilgjengelig informasjon.
+""",
+"Terje Tinholt": """
+Anslått formue: anslagsvis 0,5–1,5 mrd kr (usikkert). Eiendomsutvikler og investor i Oslo-området, kjent for bolig- og næringsprosjekter. Trolig en prosjektdrevet eiendomsaktør; selskapsstrukturen under viser den konkrete porteføljen.
+""",
+"Ingvar Hognaland": """
+Anslått formue: usikkert; knyttet til AutoStore. Sentral teknolog/oppfinner i miljøet bak AutoStore-systemet, knyttet til kommersialiseringen av lagerrobot-teknologien. Trolig en formue knyttet til oppfinner-/eierandeler i et globalt teknologiselskap.
+""",
+"Idar Vollvik": """
+Anslått formue: kraftig redusert fra toppen; tidligere milliardær. Gründer som bygde mobilselskapet Chess og solgte det til Telenor, og har siden drevet flere nye satsinger med variabelt resultat. Trolig en rask oppbygger og selger som tjente stort på Chess, men med svingende formue siden.
+""",
+
 }
