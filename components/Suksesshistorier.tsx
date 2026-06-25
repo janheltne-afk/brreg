@@ -13,6 +13,12 @@ type Dossier = {
   antallSelskaperVerv: number;
   aktiveVerv: number;
   porteforljeVerdi: number | null;
+  metode: {
+    holdingSelskaper: number;
+    maksGjeldsgrad: number | null;
+    antallGiret: number;
+    maksEiere: number;
+  } | null;
 };
 
 export function Suksesshistorier() {
@@ -76,6 +82,46 @@ export function Suksesshistorier() {
           <Stat k="Estimert verdi" v={dossier?.porteforljeVerdi != null ? kroner(dossier.porteforljeVerdi, { kompakt: true }) : "–"} sub="der børskurs finnes" />
           <Stat k="Formue (skatteliste)" v={dossier?.skatt?.formue ? kroner(dossier.skatt.formue, { kompakt: true }) : "–"} sub={dossier?.skatt ? `${dossier.skatt.aar}` : undefined} />
         </div>
+
+        {dossier && dossier.metode && (dossier.metode.holdingSelskaper > 0 || dossier.metode.maksGjeldsgrad != null || dossier.metode.maksEiere > 0) && (
+          <div className="card p-4">
+            <h3 className="mb-2 text-sm font-semibold">Metode &amp; struktur <span style={{ color: "var(--muted)" }}>(datadrevne signaler fra registrene)</span></h3>
+            <ul className="space-y-2 text-sm">
+              {dossier.metode.holdingSelskaper > 0 && (
+                <li>
+                  <span className="font-medium">Fritaksmetoden / holdingstruktur:</span> eier via{" "}
+                  <strong>{dossier.metode.holdingSelskaper}</strong> egne selskap som selv eier aksjer i andre
+                  selskap. Det er den klassiske holding-kjeden der gevinst og utbytte mellom selskaper er
+                  tilnærmet skattefritt (fritaksmetoden), så kapital kan reinvesteres ubeskattet.
+                </li>
+              )}
+              {dossier.metode.maksGjeldsgrad != null && (
+                <li>
+                  <span className="font-medium">Giring (lånefinansiering):</span> høyeste gjeldsgrad blant
+                  selskapene er <strong>{dossier.metode.maksGjeldsgrad.toLocaleString("nb-NO")}</strong> (gjeld delt
+                  på egenkapital).{" "}
+                  {dossier.metode.antallGiret > 0
+                    ? `${dossier.metode.antallGiret} selskap er tungt belånt (gjeldsgrad > 2) – altså vekst bygd med lån.`
+                    : "Relativt lav giring i selskapene."}
+                </li>
+              )}
+              {dossier.metode.maksEiere > 1 && (
+                <li>
+                  <span className="font-medium">Ekstern kapital / medinvestorer:</span> opptil{" "}
+                  <strong>{antall(dossier.metode.maksEiere)}</strong> medeiere i ett av selskapene
+                  {dossier.metode.maksEiere > 50
+                    ? " – henter inn mange investorer for å finansiere satsingene."
+                    : " – i hovedsak tett eierskap."}
+                </li>
+              )}
+            </ul>
+            <p className="mt-2 text-xs" style={{ color: "var(--muted)" }}>
+              Dette er observasjoner utledet fra registerdata (eierkjeder, regnskap, antall medeiere), ikke
+              bekreftede skatte- eller finansieringsvalg. Faktiske disposisjoner er sjelden offentlig kjent i
+              detalj.
+            </p>
+          </div>
+        )}
 
         {laster && <p className="text-sm" style={{ color: "var(--muted)" }}>Henter selskapsstruktur fra databasen…</p>}
 
