@@ -69,6 +69,34 @@ export async function GET(req: NextRequest) {
           select aar, inntekt, formue from brreg.skatteliste
           where ${flex(sql`navn_upper`)} order by aar desc limit 1`;
 
+    // Metode & struktur – datadrevne signaler fra selskapene personen styrer/eier.
+    const orgnrs = [...new Set(roller.map((r) => r.orgnr))].slice(0, 60);
+    let metode: {
+      holdingSelskaper: number; // egne selskap som selv eier aksjer (fritaksmetode-kjede)
+      maksGjeldsgrad: number | null; // høyeste giring blant selskapene
+      antallGiret: number; // selskap med gjeldsgrad > 2
+      maksEiere: number; // flest medeiere i ett av selskapene (ekstern kapital)
+    } | null = null;
+    if (orgnrs.length > 0) {
+      const [giring] = await sql<{ maks: string | null; antall_giret: number }[]>`
+        select max(case when sum_egenkapital > 0 then round(sum_gjeld / sum_egenkapital, 1) end) as maks,
+               count(*) filter (where sum_egenkapital > 0 and sum_gjeld / sum_egenkapital > 2)::int as antall_giret
+        from brreg.regnskap where organisasjonsnummer = any(${orgnrs})`;
+      const [holding] = await sql<{ n: number }[]>`
+        select count(distinct orgnr)::int as n from brreg.aksjonaerer
+        where fodselsaar_orgnr = any(${orgnrs}) and aar = 2025`;
+      const [eiere] = await sql<{ maks: number }[]>`
+        select coalesce(max(c),0)::int as maks from (
+          select orgnr, count(*) as c from brreg.aksjonaerer
+          where orgnr = any(${orgnrs}) and aar = 2025 group by orgnr) t`;
+      metode = {
+        holdingSelskaper: holding?.n ?? 0,
+        maksGjeldsgrad: giring?.maks != null ? Number(giring.maks) : null,
+        antallGiret: giring?.antall_giret ?? 0,
+        maksEiere: eiere?.maks ?? 0,
+      };
+    }
+
     const aktiveVerv = roller.filter((r) => !r.fratraadt).length;
     const porteforljeVerdi = holdings.reduce((s, h) => s + (h.verdi ? Number(h.verdi) : 0), 0);
 
@@ -80,8 +108,9 @@ export async function GET(req: NextRequest) {
       antallSelskaperVerv: new Set(roller.map((r) => r.orgnr)).size,
       aktiveVerv,
       porteforljeVerdi: porteforljeVerdi > 0 ? porteforljeVerdi : null,
+      metode,
     });
   } catch {
-    return NextResponse.json({ sisteAar: null, roller: [], holdings: [], skatt: null, antallSelskaperVerv: 0, aktiveVerv: 0, porteforljeVerdi: null });
+    return NextResponse.json({ sisteAar: null, roller: [], holdings: [], skatt: null, antallSelskaperVerv: 0, aktiveVerv: 0, porteforljeVerdi: null, metode: null });
   }
 }
