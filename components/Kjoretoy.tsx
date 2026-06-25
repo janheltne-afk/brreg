@@ -135,7 +135,7 @@ export function Kjoretoy() {
         />
         {data && data.aar && (
           <span className="text-sm" style={{ color: "var(--muted)" }}>
-            {antall(data.totalt)} {gruppe.toLowerCase()} · {data.antallMerker} merker · hele landet {data.aar}
+            {antall(data.totalt)} {gruppe.toLowerCase()} · {data.antallMerker} merker · {data.regionNavn ?? "hele landet"} {data.aar}
           </span>
         )}
       </div>
