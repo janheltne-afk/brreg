@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { suksesshistorier, type Suksesshistorie } from "@/lib/suksesshistorier";
+import { useRangering } from "@/lib/rangering";
 import { antall, kroner, dato } from "@/lib/format";
 
 type Dossier = {
@@ -26,14 +27,21 @@ export function Suksesshistorier() {
   const [valgt, setValgt] = useState<Suksesshistorie | null>(null);
   const [dossier, setDossier] = useState<Dossier | null>(null);
   const [laster, setLaster] = useState(false);
+  const [sorterRelevans, setSorterRelevans] = useState(false);
+  const { rangering, sett } = useRangering();
 
   const treff = useMemo(() => {
     const t = q.trim().toLowerCase();
-    if (!t) return suksesshistorier;
-    return suksesshistorier.filter(
-      (p) => p.navn.toLowerCase().includes(t) || p.bransje.toLowerCase().includes(t)
-    );
-  }, [q]);
+    let liste = t
+      ? suksesshistorier.filter(
+          (p) => p.navn.toLowerCase().includes(t) || p.bransje.toLowerCase().includes(t)
+        )
+      : suksesshistorier;
+    if (sorterRelevans) {
+      liste = [...liste].sort((a, b) => (rangering[b.navn] ?? 0) - (rangering[a.navn] ?? 0));
+    }
+    return liste;
+  }, [q, sorterRelevans, rangering]);
 
   useEffect(() => {
     if (!valgt) {
@@ -73,6 +81,13 @@ export function Suksesshistorier() {
             </span>
           </div>
           <p className="mt-3 text-sm leading-relaxed">{valgt.story}</p>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="text-xs" style={{ color: "var(--muted)" }}>Hvor relevant for ditt eget liv?</span>
+            <RangerVelger
+              verdi={rangering[valgt.navn] ?? null}
+              onVelg={(n) => sett(valgt.navn, n)}
+            />
+          </div>
         </div>
 
         {/* Nøkkeltall fra databasen */}
@@ -209,33 +224,75 @@ export function Suksesshistorier() {
 
   return (
     <div className="space-y-5">
-      <input
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Søk navn eller bransje…"
-        className="input max-w-md"
-      />
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {treff.map((p, i) => (
-          <button
+      <div className="flex flex-wrap items-center gap-3">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Søk navn eller bransje…"
+          className="input max-w-md"
+        />
+        <button
+          onClick={() => setSorterRelevans((s) => !s)}
+          className="rounded-lg px-3 py-1.5 text-sm font-medium"
+          style={{
+            border: "1px solid var(--border)",
+            background: sorterRelevans ? "var(--accent)" : "transparent",
+            color: sorterRelevans ? "#fff" : "var(--muted)",
+          }}
+        >
+          {sorterRelevans ? "Sortert på relevans ✓" : "Sorter på min relevans"}
+        </button>
+      </div>
+      <div className="space-y-2">
+        {treff.map((p) => (
+          <div
             key={p.navn}
-            onClick={() => setValgt(p)}
-            className="card p-4 text-left transition hover:opacity-90"
+            className="card flex w-full items-center gap-3 px-4 py-3"
           >
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="font-semibold">{p.navn}</span>
-              <span className="text-xs tabnum" style={{ color: "var(--muted)" }}>
+            <button onClick={() => setValgt(p)} className="flex min-w-0 flex-1 items-center gap-4 text-left transition hover:opacity-90">
+              <span className="w-8 shrink-0 text-sm tabnum" style={{ color: "var(--muted)" }}>
                 {suksesshistorier.indexOf(p) + 1}
               </span>
-            </div>
-            <div className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
-              {p.fodselsaar ? `f. ${p.fodselsaar} · ` : ""}{p.bransje}
-            </div>
-            <p className="mt-2 line-clamp-3 text-sm" style={{ color: "var(--muted)" }}>{p.story}</p>
-          </button>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-baseline gap-x-2">
+                  <span className="font-semibold">{p.navn}</span>
+                  <span className="text-xs" style={{ color: "var(--muted)" }}>
+                    {p.fodselsaar ? `f. ${p.fodselsaar} · ` : ""}{p.bransje}
+                  </span>
+                </div>
+                <p className="truncate text-sm" style={{ color: "var(--muted)" }}>{p.story}</p>
+              </div>
+            </button>
+            <RangerVelger verdi={rangering[p.navn] ?? null} onVelg={(n) => sett(p.navn, n)} />
+          </div>
         ))}
       </div>
       {treff.length === 0 && <p className="text-sm" style={{ color: "var(--muted)" }}>Ingen treff.</p>}
+    </div>
+  );
+}
+
+// 1–6 relevans-rangering. Trykk på et tall for å sette, samme tall igjen nuller.
+function RangerVelger({ verdi, onVelg }: { verdi: number | null; onVelg: (n: number | null) => void }) {
+  return (
+    <div className="flex shrink-0 items-center gap-1" title="Hvor relevant for ditt eget liv? (1–6)">
+      {[1, 2, 3, 4, 5, 6].map((n) => (
+        <button
+          key={n}
+          onClick={(e) => {
+            e.stopPropagation();
+            onVelg(verdi === n ? null : n);
+          }}
+          className="h-6 w-6 rounded text-xs font-medium"
+          style={{
+            border: "1px solid var(--border)",
+            background: verdi != null && n <= verdi ? "var(--accent)" : "transparent",
+            color: verdi != null && n <= verdi ? "#fff" : "var(--muted)",
+          }}
+        >
+          {n}
+        </button>
+      ))}
     </div>
   );
 }
