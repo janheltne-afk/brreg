@@ -13,22 +13,23 @@ export async function GET(req: NextRequest) {
 
   try {
     const [{ aar }] = await sql<{ aar: number }[]>`
-      select max(aar) as aar from brreg.kjoretoy_bestand`;
+      select max(aar) as aar from brreg.kjoretoy_merke`;
 
+    // Merke-fordeling for valgt region (kommune/fylke/land), ikke bare nasjonalt.
     const merker = await sql<{ merke: string; antall: string }[]>`
       select merke, antall
-      from brreg.kjoretoy_bestand
-      where gruppe = ${gruppe} and aar = ${aar}
+      from brreg.kjoretoy_merke
+      where region_kode = ${region} and gruppe = ${gruppe} and aar = ${aar}
         ${q ? sql`and merke like ${"%" + q + "%"}` : sql``}
       order by antall desc
       limit 300`;
 
     const [{ totalt, antall_merker }] = await sql<{ totalt: string; antall_merker: number }[]>`
       select coalesce(sum(antall),0) as totalt, count(*)::int as antall_merker
-      from brreg.kjoretoy_bestand where gruppe = ${gruppe} and aar = ${aar}`;
+      from brreg.kjoretoy_merke where region_kode = ${region} and gruppe = ${gruppe} and aar = ${aar}`;
 
     const grupper = await sql<{ gruppe: string }[]>`
-      select distinct gruppe from brreg.kjoretoy_bestand order by gruppe`;
+      select distinct gruppe from brreg.kjoretoy_merke order by gruppe`;
 
     // Drivstoff-fordeling for valgt region + gruppe.
     const drivstoff = await sql<{ drivstoff: string; antall: string }[]>`
