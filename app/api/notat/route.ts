@@ -16,10 +16,17 @@ export async function GET(req: NextRequest) {
   const sok = (req.nextUrl.searchParams.get("sok") ?? "").trim();
   try {
     if (sok) {
+      // Flere ord = AND: hvert ord må finnes i notatet eller navnet.
+      const ord = sok.split(/\s+/).filter(Boolean).slice(0, 8);
+      let cond = sql`brukernavn = ${bn}`;
+      for (const o of ord) {
+        const m = "%" + o + "%";
+        cond = sql`${cond} and (notat ilike ${m} or person_navn ilike ${m})`;
+      }
       const treff = await sql<{ navn: string; fodselsaar: string; notat: string }[]>`
         select person_navn as navn, person_fodselsaar as fodselsaar, notat
         from brreg.app_notat
-        where brukernavn = ${bn} and notat ilike ${"%" + sok + "%"}
+        where ${cond}
         order by oppdatert desc limit 100`;
       return NextResponse.json({ treff });
     }
