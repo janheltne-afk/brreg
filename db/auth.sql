@@ -26,3 +26,10 @@ CREATE TABLE IF NOT EXISTS brreg.app_notat (
     notat             TEXT, oppdatert TIMESTAMPTZ DEFAULT now(),
     PRIMARY KEY (brukernavn, person_navn, person_fodselsaar)
 );
+
+-- Importerte telefonkontakter per bruker (CRM). Kobles til personer på navn.
+-- Fylles av tools/load-kontakter.py fra en .vcf-fil. Personlige data.
+CREATE TABLE IF NOT EXISTS brreg.app_kontakt (
+    id bigserial PRIMARY KEY, brukernavn TEXT, navn TEXT, navn_upper TEXT,
+    telefon TEXT, epost TEXT, sted TEXT, notat TEXT, fodselsaar TEXT
+);
