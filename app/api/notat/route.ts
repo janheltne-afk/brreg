@@ -16,18 +16,26 @@ export async function GET(req: NextRequest) {
   const sok = (req.nextUrl.searchParams.get("sok") ?? "").trim();
   try {
     if (sok) {
-      // Flere ord = AND: hvert ord må finnes i notatet eller navnet.
+      // Flere ord = AND. Søker i BÅDE egne notater og i kontaktenes notater/
+      // #tagger, så du kan søke f.eks. "snekker" og finne folk uansett om det
+      // står i et eget notat eller kom inn fra telefonkontaktene.
       const ord = sok.split(/\s+/).filter(Boolean).slice(0, 8);
-      let cond = sql`brukernavn = ${bn}`;
+      let cNotat = sql`brukernavn = ${bn}`;
+      let cKontakt = sql`brukernavn = ${bn} and notat <> ''`;
       for (const o of ord) {
         const m = "%" + o + "%";
-        cond = sql`${cond} and (notat ilike ${m} or person_navn ilike ${m})`;
+        cNotat = sql`${cNotat} and (notat ilike ${m} or person_navn ilike ${m})`;
+        cKontakt = sql`${cKontakt} and (notat ilike ${m} or navn ilike ${m})`;
       }
-      const treff = await sql<{ navn: string; fodselsaar: string; notat: string }[]>`
-        select person_navn as navn, person_fodselsaar as fodselsaar, notat
-        from brreg.app_notat
-        where ${cond}
-        order by oppdatert desc limit 100`;
+      const fraNotat = await sql<{ navn: string; fodselsaar: string; notat: string; kilde: string }[]>`
+        select person_navn as navn, person_fodselsaar as fodselsaar, notat, 'notat' as kilde
+        from brreg.app_notat where ${cNotat} order by oppdatert desc limit 100`;
+      const fraKontakt = await sql<{ navn: string; fodselsaar: string; notat: string; kilde: string }[]>`
+        select navn_upper as navn, coalesce(fodselsaar, '') as fodselsaar, notat, 'kontakt' as kilde
+        from brreg.app_kontakt where ${cKontakt} limit 100`;
+      // Slå sammen, dedupliser på navn+fødselsår (egne notater vinner).
+      const seen = new Set(fraNotat.map((r) => `${r.navn}|${r.fodselsaar}`));
+      const treff = [...fraNotat, ...fraKontakt.filter((r) => !seen.has(`${r.navn}|${r.fodselsaar}`))];
       return NextResponse.json({ treff });
     }
     const navn = (req.nextUrl.searchParams.get("navn") ?? "").trim();

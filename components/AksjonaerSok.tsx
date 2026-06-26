@@ -37,7 +37,7 @@ export function AksjonaerSok({ initialNavn, initialFodselsaar }: { initialNavn?:
   const [notatStatus, setNotatStatus] = useState<"" | "lagrer" | "lagret">("");
   const notatTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [notatSok, setNotatSok] = useState("");
-  const [notatTreff, setNotatTreff] = useState<{ navn: string; fodselsaar: string; notat: string }[]>([]);
+  const [notatTreff, setNotatTreff] = useState<{ navn: string; fodselsaar: string; notat: string; kilde?: string }[]>([]);
   const [kontakter, setKontakter] = useState<
     { navn: string; telefon: string | null; epost: string | null; sted: string | null; notat: string | null }[]
   >([]);
@@ -216,7 +216,12 @@ export function AksjonaerSok({ initialNavn, initialFodselsaar }: { initialNavn?:
                 style={{ borderColor: "var(--border)" }}
               >
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-sm font-medium">{t.navn}</span>
+                  <span className="text-sm font-medium">
+                    {t.navn}
+                    {t.kilde === "kontakt" && (
+                      <span className="ml-2 text-xs font-normal" style={{ color: "var(--accent)" }}>📇 kontakt</span>
+                    )}
+                  </span>
                   <span className="text-xs" style={{ color: "var(--muted)" }}>{t.fodselsaar || "–"}</span>
                 </div>
                 <div className="truncate text-xs" style={{ color: "var(--muted)" }}>{t.notat}</div>
