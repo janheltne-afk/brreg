@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const [brukernavn, setBrukernavn] = useState("");
   const [passord, setPassord] = useState("");
   const [feil, setFeil] = useState(false);
   const [laster, setLaster] = useState(false);
@@ -16,7 +17,7 @@ export default function LoginPage() {
     const r = await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ passord }),
+      body: JSON.stringify({ brukernavn, passord }),
     });
     setLaster(false);
     if (r.ok) {
@@ -34,25 +35,33 @@ export default function LoginPage() {
         <div>
           <h1 className="text-lg font-semibold">Logg inn</h1>
           <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-            Skriv inn passordet for å åpne dashbordet.
+            Skriv inn brukernavn og passord for å åpne dashbordet.
           </p>
         </div>
         <input
+          value={brukernavn}
+          autoFocus
+          onChange={(e) => setBrukernavn(e.target.value)}
+          placeholder="Brukernavn"
+          autoComplete="username"
+          className="input"
+        />
+        <input
           type="password"
           value={passord}
-          autoFocus
           onChange={(e) => setPassord(e.target.value)}
           placeholder="Passord"
+          autoComplete="current-password"
           className="input"
         />
         {feil && (
           <p className="text-sm" style={{ color: "var(--accent2)" }}>
-            Feil passord. Prøv igjen.
+            Feil brukernavn eller passord.
           </p>
         )}
         <button
           type="submit"
-          disabled={laster || passord.length === 0}
+          disabled={laster || !brukernavn || !passord}
           className="w-full rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-50"
           style={{ background: "var(--accent)", color: "#fff" }}
         >
