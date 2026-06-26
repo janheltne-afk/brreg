@@ -1,43 +1,49 @@
 "use client";
 
-// Personlig relevans-rangering (1–6) av suksesshistoriene, lagret i nettleseren
-// (localStorage). Ingen innlogging. Endringer kringkastes så listen oppdaterer
-// seg umiddelbart.
+// Personlig relevans-rangering (1–6) per innlogget bruker, lagret server-side
+// via /api/rangering. Delt modul-cache så lista holdes i synk.
 
 import { useCallback, useEffect, useState } from "react";
 
-const NOKKEL = "brreg_rangering";
-const HENDELSE = "brreg-rangering-endret";
+let cache: Record<string, number> | null = null;
+let laster: Promise<void> | null = null;
+const lyttere = new Set<() => void>();
+const varsle = () => lyttere.forEach((l) => l());
 
-function les(): Record<string, number> {
-  if (typeof window === "undefined") return {};
+async function lastInn() {
   try {
-    return JSON.parse(window.localStorage.getItem(NOKKEL) || "{}");
+    const r = await fetch("/api/rangering");
+    const d = await r.json();
+    cache = d.rangering ?? {};
   } catch {
-    return {};
+    cache = {};
   }
+  varsle();
 }
 
 export function useRangering() {
-  const [rangering, setRangering] = useState<Record<string, number>>({});
+  const [, setTick] = useState(0);
 
   useEffect(() => {
-    setRangering(les());
-    const oppdater = () => setRangering(les());
-    window.addEventListener(HENDELSE, oppdater);
-    window.addEventListener("storage", oppdater);
-    return () => {
-      window.removeEventListener(HENDELSE, oppdater);
-      window.removeEventListener("storage", oppdater);
-    };
+    const oppdater = () => setTick((t) => t + 1);
+    lyttere.add(oppdater);
+    if (cache === null && !laster) laster = lastInn().finally(() => { laster = null; });
+    return () => { lyttere.delete(oppdater); };
   }, []);
 
+  const rangering = cache ?? {};
+
   const sett = useCallback((navn: string, verdi: number | null) => {
-    const r = les();
-    if (verdi == null) delete r[navn];
-    else r[navn] = verdi;
-    window.localStorage.setItem(NOKKEL, JSON.stringify(r));
-    window.dispatchEvent(new Event(HENDELSE));
+    const ny = { ...(cache ?? {}) };
+    if (verdi == null) delete ny[navn];
+    else ny[navn] = verdi;
+    cache = ny;
+    varsle();
+    fetch("/api/rangering", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ navn, verdi }),
+    }).catch(() => {});
   }, []);
 
   return { rangering, sett };

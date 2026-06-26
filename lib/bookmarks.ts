@@ -1,64 +1,72 @@
 "use client";
 
-// Bokmerker (lagrede selskap og aksjonærer) i nettleserens localStorage.
-// Ingen innlogging nødvendig – lagres per enhet/nettleser. Endringer kringkastes
-// med en egen hendelse så alle komponenter i fanen oppdateres umiddelbart.
+// Bokmerker per innlogget bruker (lagres server-side via /api/bokmerker).
+// Delt modul-cache så alle komponenter i appen holdes i synk.
 
 import { useCallback, useEffect, useState } from "react";
 
 export type Bokmerke = {
   type: "selskap" | "aksjonaer";
-  key: string; // unik id: orgnr (selskap) eller "NAVN|fødselsår" (aksjonær)
+  key: string;
   navn: string;
   orgnr?: string;
   fodselsaar?: string | null;
 };
 
-const NOKKEL = "brreg_bokmerker";
-const HENDELSE = "brreg-bokmerker-endret";
+let cache: Bokmerke[] | null = null;
+let laster: Promise<void> | null = null;
+const lyttere = new Set<() => void>();
+const varsle = () => lyttere.forEach((l) => l());
 
-function les(): Bokmerke[] {
-  if (typeof window === "undefined") return [];
+async function lastInn() {
   try {
-    const r = window.localStorage.getItem(NOKKEL);
-    return r ? (JSON.parse(r) as Bokmerke[]) : [];
+    const r = await fetch("/api/bokmerker");
+    const d = await r.json();
+    cache = d.bokmerker ?? [];
   } catch {
-    return [];
+    cache = [];
   }
-}
-
-function skriv(liste: Bokmerke[]) {
-  window.localStorage.setItem(NOKKEL, JSON.stringify(liste));
-  window.dispatchEvent(new Event(HENDELSE));
+  varsle();
 }
 
 export function useBokmerker() {
-  const [bokmerker, setBokmerker] = useState<Bokmerke[]>([]);
+  const [, setTick] = useState(0);
 
   useEffect(() => {
-    setBokmerker(les());
-    const oppdater = () => setBokmerker(les());
-    window.addEventListener(HENDELSE, oppdater);
-    window.addEventListener("storage", oppdater); // synk på tvers av faner
-    return () => {
-      window.removeEventListener(HENDELSE, oppdater);
-      window.removeEventListener("storage", oppdater);
-    };
+    const oppdater = () => setTick((t) => t + 1);
+    lyttere.add(oppdater);
+    if (cache === null && !laster) laster = lastInn().finally(() => { laster = null; });
+    return () => { lyttere.delete(oppdater); };
   }, []);
 
+  const bokmerker = cache ?? [];
+
   const veksle = useCallback((b: Bokmerke) => {
-    const liste = les();
-    const finnes = liste.some((x) => x.type === b.type && x.key === b.key);
-    skriv(finnes ? liste.filter((x) => !(x.type === b.type && x.key === b.key)) : [b, ...liste]);
+    const finnes = (cache ?? []).some((x) => x.type === b.type && x.key === b.key);
+    cache = finnes
+      ? (cache ?? []).filter((x) => !(x.type === b.type && x.key === b.key))
+      : [b, ...(cache ?? [])];
+    varsle();
+    fetch("/api/bokmerker", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ b, fjern: finnes }),
+    }).catch(() => {});
   }, []);
 
   const fjern = useCallback((type: Bokmerke["type"], key: string) => {
-    skriv(les().filter((x) => !(x.type === type && x.key === key)));
+    cache = (cache ?? []).filter((x) => !(x.type === type && x.key === key));
+    varsle();
+    fetch("/api/bokmerker", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ b: { type, key }, fjern: true }),
+    }).catch(() => {});
   }, []);
 
   const erBokmerket = useCallback(
-    (type: Bokmerke["type"], key: string) =>
-      bokmerker.some((x) => x.type === type && x.key === key),
+    (type: Bokmerke["type"], key: string) => (cache ?? []).some((x) => x.type === type && x.key === key),
+    // tick-avhengighet via re-render
     [bokmerker]
   );
 

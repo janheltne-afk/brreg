@@ -1,0 +1,21 @@
+-- Brukerautentisering for appen. Innlogging med brukernavn + passord; passordet
+-- lagres som SHA-256 av "brreg:<passord>". Cookie signeres med HMAC (lib/auth.ts).
+-- Legg til brukere med tools/legg-til-bruker.py. Standardbruker: admin / admin.
+CREATE TABLE IF NOT EXISTS brreg.app_bruker (
+    brukernavn   TEXT PRIMARY KEY,
+    passord_hash TEXT NOT NULL,
+    opprettet    TIMESTAMPTZ DEFAULT now()
+);
+
+-- Bokmerker per bruker (server-side, følger brukeren på tvers av enheter).
+CREATE TABLE IF NOT EXISTS brreg.app_bokmerke (
+    brukernavn TEXT, type TEXT, nokkel TEXT, navn TEXT, orgnr TEXT, fodselsaar TEXT,
+    opprettet  TIMESTAMPTZ DEFAULT now(),
+    PRIMARY KEY (brukernavn, type, nokkel)
+);
+
+-- Relevans-rangering (1–6) per bruker.
+CREATE TABLE IF NOT EXISTS brreg.app_rangering (
+    brukernavn TEXT, navn TEXT, verdi INT,
+    PRIMARY KEY (brukernavn, navn)
+);

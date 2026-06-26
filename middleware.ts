@@ -1,19 +1,17 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { verifyToken, COOKIE } from "@/lib/auth";
 
-// Enkel passordsperre: uten gyldig innloggings-cookie sendes alt til /login.
-// Selve passordsjekken skjer server-side i /api/login (passordet ligger aldri
-// i nettleseren). Cookie-en holder deg innlogget i 30 dager.
-const COOKIE = "brreg_auth";
-const TOKEN = "ok";
-
-export function middleware(req: NextRequest) {
+// Krever gyldig innloggings-cookie (signert med brukernavn). Uten den sendes
+// alt til /login. Selve passordsjekken skjer i /api/login.
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const authed = req.cookies.get(COOKIE)?.value === TOKEN;
-
-  if (authed || pathname === "/login" || pathname === "/api/login") {
+  if (pathname === "/login" || pathname === "/api/login") {
     return NextResponse.next();
   }
+
+  const brukernavn = await verifyToken(req.cookies.get(COOKIE)?.value);
+  if (brukernavn) return NextResponse.next();
 
   const url = req.nextUrl.clone();
   url.pathname = "/login";
@@ -21,7 +19,6 @@ export function middleware(req: NextRequest) {
   return NextResponse.redirect(url);
 }
 
-// Kjør på alle sider/ruter unntatt Next sine statiske ressurser.
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
