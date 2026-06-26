@@ -38,12 +38,16 @@ export function AksjonaerSok({ initialNavn, initialFodselsaar }: { initialNavn?:
   const notatTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [notatSok, setNotatSok] = useState("");
   const [notatTreff, setNotatTreff] = useState<{ navn: string; fodselsaar: string; notat: string }[]>([]);
+  const [kontakter, setKontakter] = useState<
+    { navn: string; telefon: string | null; epost: string | null; sted: string | null; notat: string | null }[]
+  >([]);
 
   const lastNavn = useCallback(async (navn: string, fodselsaar: string | null) => {
     setLaster(true);
     setTreff([]);
     setNotat("");
     setNotatStatus("");
+    setKontakter([]);
     try {
       const r = await fetch(
         `/api/aksjonaer?navn=${encodeURIComponent(navn)}&fodselsaar=${encodeURIComponent(fodselsaar ?? "")}`);
@@ -51,6 +55,8 @@ export function AksjonaerSok({ initialNavn, initialFodselsaar }: { initialNavn?:
       const nr = await fetch(
         `/api/notat?navn=${encodeURIComponent(navn)}&fodselsaar=${encodeURIComponent(fodselsaar ?? "")}`);
       setNotat((await nr.json()).notat ?? "");
+      const kr = await fetch(`/api/kontakt?navn=${encodeURIComponent(navn)}`);
+      setKontakter((await kr.json()).kontakter ?? []);
     } finally {
       setLaster(false);
     }
@@ -265,6 +271,39 @@ export function AksjonaerSok({ initialNavn, initialFodselsaar }: { initialNavn?:
               sub={sammendrag.sisteSkatt ? `${sammendrag.sisteSkatt.aar}` : undefined}
             />
           </div>
+
+          {/* Treff i telefonkontaktene mine */}
+          {kontakter.length > 0 && (
+            <div className="card p-4" style={{ borderColor: "var(--accent)" }}>
+              <h3 className="mb-2 text-sm font-semibold">
+                📇 I kontaktene dine
+                {kontakter.length > 1 && (
+                  <span className="ml-2 font-normal" style={{ color: "var(--muted)" }}>({kontakter.length} mulige treff)</span>
+                )}
+              </h3>
+              <div className="space-y-2">
+                {kontakter.map((k, i) => (
+                  <div key={i} className="text-sm">
+                    <div className="font-medium">{k.navn}</div>
+                    <div className="flex flex-wrap gap-x-4 gap-y-0.5" style={{ color: "var(--muted)" }}>
+                      {k.telefon && (
+                        <a href={`tel:${k.telefon.replace(/\s/g, "")}`} className="hover:underline" style={{ color: "var(--accent)" }}>
+                          📞 {k.telefon}
+                        </a>
+                      )}
+                      {k.epost && (
+                        <a href={`mailto:${k.epost}`} className="hover:underline" style={{ color: "var(--accent)" }}>
+                          ✉ {k.epost}
+                        </a>
+                      )}
+                      {k.sted && <span>📍 {k.sted}</span>}
+                    </div>
+                    {k.notat && <div className="text-xs" style={{ color: "var(--muted)" }}>{k.notat}</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Mine notater (CRM) */}
           <div className="card p-4">
