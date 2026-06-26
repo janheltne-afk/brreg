@@ -19,3 +19,10 @@ CREATE TABLE IF NOT EXISTS brreg.app_rangering (
     brukernavn TEXT, navn TEXT, verdi INT,
     PRIMARY KEY (brukernavn, navn)
 );
+
+-- Egne notater per bruker på aksjonærer/personer (CRM). Søkbart fritekstfelt.
+CREATE TABLE IF NOT EXISTS brreg.app_notat (
+    brukernavn        TEXT, person_navn TEXT, person_fodselsaar TEXT,
+    notat             TEXT, oppdatert TIMESTAMPTZ DEFAULT now(),
+    PRIMARY KEY (brukernavn, person_navn, person_fodselsaar)
+);

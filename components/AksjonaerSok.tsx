@@ -32,17 +32,54 @@ export function AksjonaerSok({ initialNavn, initialFodselsaar }: { initialNavn?:
   const [laster, setLaster] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Notater (CRM): per bruker, per person, søkbart.
+  const [notat, setNotat] = useState("");
+  const [notatStatus, setNotatStatus] = useState<"" | "lagrer" | "lagret">("");
+  const notatTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [notatSok, setNotatSok] = useState("");
+  const [notatTreff, setNotatTreff] = useState<{ navn: string; fodselsaar: string; notat: string }[]>([]);
+
   const lastNavn = useCallback(async (navn: string, fodselsaar: string | null) => {
     setLaster(true);
     setTreff([]);
+    setNotat("");
+    setNotatStatus("");
     try {
       const r = await fetch(
         `/api/aksjonaer?navn=${encodeURIComponent(navn)}&fodselsaar=${encodeURIComponent(fodselsaar ?? "")}`);
       setDetalj(await r.json());
+      const nr = await fetch(
+        `/api/notat?navn=${encodeURIComponent(navn)}&fodselsaar=${encodeURIComponent(fodselsaar ?? "")}`);
+      setNotat((await nr.json()).notat ?? "");
     } finally {
       setLaster(false);
     }
   }, []);
+
+  // Lagre notat (debounced) for gjeldende person.
+  const endreNotat = useCallback((tekst: string, navn: string, fodselsaar: string | null) => {
+    setNotat(tekst);
+    setNotatStatus("lagrer");
+    if (notatTimer.current) clearTimeout(notatTimer.current);
+    notatTimer.current = setTimeout(async () => {
+      await fetch("/api/notat", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ navn, fodselsaar: fodselsaar ?? "", notat: tekst }),
+      }).catch(() => {});
+      setNotatStatus("lagret");
+    }, 600);
+  }, []);
+
+  // Søk i egne notater (f.eks. "golf").
+  useEffect(() => {
+    if (notatSok.trim().length < 2) { setNotatTreff([]); return; }
+    const t = setTimeout(async () => {
+      const r = await fetch(`/api/notat?sok=${encodeURIComponent(notatSok.trim())}`);
+      setNotatTreff((await r.json()).treff ?? []);
+    }, 250);
+    return () => clearTimeout(t);
+  }, [notatSok]);
 
   // Åpne direkte fra et bokmerke (?navn=&fodselsaar=).
   useEffect(() => {
@@ -155,6 +192,37 @@ export function AksjonaerSok({ initialNavn, initialFodselsaar }: { initialNavn?:
         )}
       </div>
 
+      {/* CRM: søk i egne notater (f.eks. "golf") */}
+      <div className="max-w-xl">
+        <input
+          value={notatSok}
+          onChange={(e) => setNotatSok(e.target.value)}
+          placeholder="Søk i mine notater (f.eks. golf)…"
+          className="input"
+        />
+        {notatTreff.length > 0 && (
+          <div className="card mt-2 divide-y" style={{ borderColor: "var(--border)" }}>
+            {notatTreff.map((t, i) => (
+              <button
+                key={`${t.navn}|${t.fodselsaar}|${i}`}
+                onClick={() => { setNotatSok(""); lastNavn(t.navn, t.fodselsaar || null); }}
+                className="block w-full px-4 py-2 text-left hover:opacity-80"
+                style={{ borderColor: "var(--border)" }}
+              >
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-sm font-medium">{t.navn}</span>
+                  <span className="text-xs" style={{ color: "var(--muted)" }}>{t.fodselsaar || "–"}</span>
+                </div>
+                <div className="truncate text-xs" style={{ color: "var(--muted)" }}>{t.notat}</div>
+              </button>
+            ))}
+          </div>
+        )}
+        {notatSok.trim().length >= 2 && notatTreff.length === 0 && (
+          <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>Ingen notater matcher «{notatSok.trim()}».</p>
+        )}
+      </div>
+
       {laster && <p className="text-sm" style={{ color: "var(--muted)" }}>Laster…</p>}
 
       {detalj && (detalj.perAar.length > 0 || (detalj.skatt && detalj.skatt.length > 0) || (detalj.roller && detalj.roller.length > 0)) && (
@@ -195,6 +263,24 @@ export function AksjonaerSok({ initialNavn, initialFodselsaar }: { initialNavn?:
               k="Formue (skatteliste)"
               v={sammendrag.sisteSkatt ? kroner(sammendrag.sisteSkatt.formue, { kompakt: true }) : "–"}
               sub={sammendrag.sisteSkatt ? `${sammendrag.sisteSkatt.aar}` : undefined}
+            />
+          </div>
+
+          {/* Mine notater (CRM) */}
+          <div className="card p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-sm font-semibold">Mine notater</h3>
+              <span className="text-xs" style={{ color: "var(--muted)" }}>
+                {notatStatus === "lagrer" ? "Lagrer…" : notatStatus === "lagret" ? "Lagret ✓" : ""}
+              </span>
+            </div>
+            <textarea
+              value={notat}
+              onChange={(e) => endreNotat(e.target.value, detalj.navn, detalj.fodselsaar)}
+              placeholder="Egne observasjoner, research, stikkord (f.eks. «golf», «kjenner X», «vurderer kjøp»)… Søkbart øverst."
+              rows={3}
+              className="input"
+              style={{ resize: "vertical", minHeight: "4.5rem" }}
             />
           </div>
 
