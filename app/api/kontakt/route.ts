@@ -17,8 +17,9 @@ export async function GET(req: NextRequest) {
   const last = tokens[tokens.length - 1] ?? navn;
   const filter =
     tokens.length > 1
-      ? sql`(navn_upper = ${navn} or (navn_upper like ${first + "%"} and navn_upper like ${"%" + last}))`
-      : sql`navn_upper = ${navn}`;
+      ? sql`(navn_upper = ${navn} or navn_upper like ${navn + " %"}
+             or (navn_upper like ${first + "%"} and navn_upper like ${"%" + last}))`
+      : sql`(navn_upper = ${navn} or navn_upper like ${navn + " %"})`;
 
   try {
     const kontakter = await sql<
