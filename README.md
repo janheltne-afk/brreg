@@ -55,7 +55,28 @@ tools/seed-prep.py                         Last ned + konverter + finn watermark
 tools/json_array_to_ndjson.py              Strøm-konverter JSON-array → NDJSON
 hop/workflows/brreg-regnskap.hwf           Henter årsregnskap (nøkkeltall) per org
 hop/pipelines/brreg-regnskap-last.hpl      Per-org regnskap-oppslag → upsert
+db/konkurs.sql                             Konkursregisteret: analyseviews (bransje/kommune/år)
 ```
+
+## Konkursregisteret (bransjeanalyse)
+
+`enheter.konkurs`/`enheter.konkursdato` kommer gratis med i den vanlige
+enhets-syncen (feltene finnes i enhetsregisterets åpne API, på samme måte som
+`under_avvikling`). Det **frittstående** "Konkursregisteret"-produktet til
+Brønnøysundregistrene (bostyrer, kunngjøringstekst, konkurskarantene) krever
+egen maskin-til-maskin-avtale for oppslag på fødselsnummer og er ikke åpne data
+— det er derfor ikke inkludert her.
+
+`db/konkurs.sql` bygger analyseobjekter oppå disse feltene:
+- `brreg.v_konkurser` – enheter med `konkurs = true`, med bransje/kommune/år.
+- `brreg.mv_konkurser_bransje` / `..._kommune` / `..._per_aar` / `..._bransje_aar`
+  – materialiserte views for topp-bransjer, topp-kommuner, tidsserie og
+  bransje×år-trend.
+
+Kjør `db/konkurs.sql` én gang mot databasen (se `tools/run-sql.sh -f db/konkurs.sql`),
+og `REFRESH MATERIALIZED VIEW brreg.mv_konkurser_...` etter hver nye
+enhets-sync/seed. Dashboardet viser dette i fanen **Konkurser**
+(`app/konkurser`, `app/api/konkurser`).
 
 ## Regnskap (årsregnskap-nøkkeltall)
 

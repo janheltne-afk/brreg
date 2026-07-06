@@ -79,6 +79,7 @@
     registrert_mva                   BOOLEAN,
     registrert_foretaksreg           BOOLEAN,
     konkurs                          BOOLEAN,
+    konkursdato                      DATE,
     under_avvikling                  BOOLEAN,
     overordnet_enhet                 TEXT,
     institusjonell_sektor_kode       TEXT,
@@ -96,6 +97,7 @@ CREATE TABLE IF NOT EXISTS sync_status (
 ALTER TABLE enheter ADD COLUMN IF NOT EXISTS slettedato DATE;
 ALTER TABLE enheter ADD COLUMN IF NOT EXISTS oppdateringsid BIGINT;
 ALTER TABLE enheter ADD COLUMN IF NOT EXISTS hentet_dato TIMESTAMPTZ DEFAULT now();
+ALTER TABLE enheter ADD COLUMN IF NOT EXISTS konkursdato DATE;
 CREATE INDEX IF NOT EXISTS idx_enheter_oppdateringsid ON enheter (oppdateringsid);
 INSERT INTO sync_status (nokkel, verdi, sist_kjoert)
 VALUES ('enheter_oppdateringsid', '0', NULL)

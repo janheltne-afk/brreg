@@ -318,6 +318,7 @@
       <field><name>registrert_mva</name><path>$.registrertIMvaregisteret</path><type>Boolean</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
       <field><name>registrert_foretaksreg</name><path>$.registrertIForetaksregisteret</path><type>Boolean</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
       <field><name>konkurs</name><path>$.konkurs</path><type>Boolean</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>konkursdato</name><path>$.konkursdato</path><type>Date</type><format>yyyy-MM-dd</format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
       <field><name>under_avvikling</name><path>$.underAvvikling</path><type>Boolean</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
       <field><name>overordnet_enhet</name><path>$.overordnetEnhet</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
       <field><name>institusjonell_sektor_kode</name><path>$.institusjonellSektorkode.kode</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
@@ -427,6 +428,7 @@
       <value><name>registrert_mva</name><rename>registrert_mva</rename><update>Y</update></value>
       <value><name>registrert_foretaksreg</name><rename>registrert_foretaksreg</rename><update>Y</update></value>
       <value><name>konkurs</name><rename>konkurs</rename><update>Y</update></value>
+      <value><name>konkursdato</name><rename>konkursdato</rename><update>Y</update></value>
       <value><name>under_avvikling</name><rename>under_avvikling</rename><update>Y</update></value>
       <value><name>overordnet_enhet</name><rename>overordnet_enhet</rename><update>Y</update></value>
       <value><name>institusjonell_sektor_kode</name><rename>institusjonell_sektor_kode</rename><update>Y</update></value>

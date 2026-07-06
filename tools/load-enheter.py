@@ -40,7 +40,7 @@ COLS = [
     ("forr_kommune","text"),("forr_kommunenummer","text"),("forr_land","text"),
     ("post_adresse","text"),("post_postnummer","text"),("post_poststed","text"),
     ("registrert_mva","boolean"),("registrert_foretaksreg","boolean"),
-    ("konkurs","boolean"),("under_avvikling","boolean"),("overordnet_enhet","text"),
+    ("konkurs","boolean"),("konkursdato","date"),("under_avvikling","boolean"),("overordnet_enhet","text"),
     ("institusjonell_sektor_kode","text"),("institusjonell_sektor_beskrivelse","text"),
     ("slettedato","date"),
 ]
@@ -82,7 +82,8 @@ def rec(e):
         "post_poststed": pa.get("poststed"),
         "registrert_mva": e.get("registrertIMvaregisteret"),
         "registrert_foretaksreg": e.get("registrertIForetaksregisteret"),
-        "konkurs": e.get("konkurs"), "under_avvikling": e.get("underAvvikling"),
+        "konkurs": e.get("konkurs"), "konkursdato": d(e.get("konkursdato")),
+        "under_avvikling": e.get("underAvvikling"),
         "overordnet_enhet": e.get("overordnetEnhet"),
         "institusjonell_sektor_kode": isk.get("kode"),
         "institusjonell_sektor_beskrivelse": isk.get("beskrivelse"),

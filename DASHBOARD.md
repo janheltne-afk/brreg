@@ -9,6 +9,7 @@ Brønnøysundregistrene/Skatteetaten (Supabase Postgres). Appen ligger i
 - **Selskaper** – søk et selskap → enhetsinfo, siste regnskap og største aksjeeiere samlet
 - **Aksjonær** – søk en person/eier → aksjepostene deres **år for år** (selskap × år-matrise)
 - **Regnskap** – topp 50 selskaper etter driftsinntekter
+- **Konkurser** – konkursregisteret: analyse per bransje, kommune og år
 
 ## Teknologi
 Next.js 15 (App Router) · React 19 · TypeScript · Tailwind v4 · Recharts ·
@@ -30,8 +31,9 @@ npm run dev                      # http://localhost:3000
 3. Deploy. Next.js detekteres automatisk.
 
 ## Databaseobjekter
-Materialiserte views og søke-indekser er definert i [`db/dashboard.sql`](db/dashboard.sql).
-Kjør den én gang mot databasen, og `REFRESH MATERIALIZED VIEW …` etter hver nye datainnlasting.
+Materialiserte views og søke-indekser er definert i [`db/dashboard.sql`](db/dashboard.sql)
+og [`db/konkurs.sql`](db/konkurs.sql) (konkursanalyse). Kjør dem én gang mot
+databasen, og `REFRESH MATERIALIZED VIEW …` etter hver nye datainnlasting.
 
 ## Legge til en ny fane
 1. Lag `app/<slug>/page.tsx` (server-komponent som henter data via `sql` fra `lib/db`).

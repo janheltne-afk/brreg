@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS brreg.enheter (
     registrert_mva                   BOOLEAN,
     registrert_foretaksreg           BOOLEAN,
     konkurs                          BOOLEAN,
+    konkursdato                      DATE,
     under_avvikling                  BOOLEAN,
     overordnet_enhet                 TEXT,
     institusjonell_sektor_kode       TEXT,
@@ -57,9 +58,17 @@ CREATE TABLE IF NOT EXISTS brreg.sync_status (
 ALTER TABLE brreg.enheter ADD COLUMN IF NOT EXISTS slettedato DATE;
 ALTER TABLE brreg.enheter ADD COLUMN IF NOT EXISTS oppdateringsid BIGINT;
 ALTER TABLE brreg.enheter ADD COLUMN IF NOT EXISTS hentet_dato TIMESTAMPTZ DEFAULT now();
+ALTER TABLE brreg.enheter ADD COLUMN IF NOT EXISTS konkursdato DATE;
 
 -- Indeks som brukes for å finne neste delta-batch raskt.
 CREATE INDEX IF NOT EXISTS idx_enheter_oppdateringsid ON brreg.enheter (oppdateringsid);
+
+-- Konkursregisteret: dato for konkursåpning gjør det mulig å analysere konkurser
+-- over tid, per bransje (naeringskode1) og per kommune. Feltet kommer fra
+-- enhetsregisterets åpne API (samme kilde som resten av `enheter`) — det
+-- offisielle frittstående Konkursregisteret krever egen M2M-autorisasjon for
+-- fødselsnummer-oppslag og er ikke åpne data.
+CREATE INDEX IF NOT EXISTS idx_enheter_konkursdato ON brreg.enheter (konkursdato) WHERE konkursdato IS NOT NULL;
 
 -- Seed watermark hvis den ikke finnes (verdi 0 = hent alt fra start).
 INSERT INTO brreg.sync_status (nokkel, verdi, sist_kjoert)
