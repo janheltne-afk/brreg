@@ -57,6 +57,8 @@ hop/workflows/brreg-regnskap.hwf           Henter årsregnskap (nøkkeltall) per
 hop/pipelines/brreg-regnskap-last.hpl      Per-org regnskap-oppslag → upsert
 db/konkurs.sql                             Konkursregisteret: analyseviews (bransje/kommune/år)
 db/erp.sql                                 ERP-system per selskap + filtrerbar masterliste
+tools/load-konkurser.py                    Henter alle pågående konkursbo fra brreg-API (m/ dato)
+tools/load-konkurs-statistikk.py           SSB 12972: konkurser per kommune/næring/år (offisiell)
 ```
 
 ## Konkursregisteret (bransjeanalyse)
@@ -74,10 +76,22 @@ egen maskin-til-maskin-avtale for oppslag på fødselsnummer og er ikke åpne da
   – materialiserte views for topp-bransjer, topp-kommuner, tidsserie og
   bransje×år-trend.
 
-Kjør `db/konkurs.sql` én gang mot databasen (se `tools/run-sql.sh -f db/konkurs.sql`),
-og `REFRESH MATERIALIZED VIEW brreg.mv_konkurser_...` etter hver nye
-enhets-sync/seed. Dashboardet viser dette i fanen **Konkurser**
-(`app/konkurser`, `app/api/konkurser`).
+Kjør `db/konkurs.sql` én gang mot databasen (se `tools/run-sql.sh -f db/konkurs.sql`).
+Dashboardet viser dette i fanen **Konkurser** (`app/konkurser`, `app/api/konkurser`).
+
+**Viktig om dekning:** enhetsregisteret flagger kun *pågående* konkursbo
+(~3–4000 til enhver tid) — ferdigbehandlede bo slettes fra registeret. Fanen
+kombinerer derfor to kilder:
+
+- **SSB tabell 12972** (offisiell statistikk): komplette tall per kommune,
+  næring og år fra 2009 og fremover. Lastes med
+  `python3 tools/load-konkurs-statistikk.py` (→ `ssb_konkurser_kommune`,
+  `ssb_konkurser_naering`). Kjør f.eks. månedlig.
+- **Enhetsregisteret** (selskapsnivå): drillbar liste over selskaper med
+  pågående bo, inkl. konkursåpningsdato. Lastes/oppdateres med
+  `python3 tools/load-konkurser.py` — den henter alle `konkurs=true`-enheter
+  fra brreg-API-et og upserter til `enheter` (fyller også inn `konkursdato`
+  som mangler på rader fra eldre seeds). Kjør f.eks. ukentlig.
 
 ## ERP-system per selskap
 

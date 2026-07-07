@@ -3,66 +3,71 @@ import { sql } from "@/lib/db";
 
 export const runtime = "nodejs";
 
-// Konkursanalyse (bransje/kommune/tidsserie) basert på enhetsregisterets egne
-// felt `konkurs`/`konkursdato` (se db/konkurs.sql for hvorfor det ikke er det
-// frittstående, tilgangsbegrensede Konkursregisteret). Spørres live mot
-// brreg.v_konkurser (ikke materialiserte views) slik at tallene alltid er
-// ferske rett etter en ny enhets-sync, uten manuell REFRESH.
+// Konkursanalyse i to lag:
+//  - OFFISIELL statistikk fra SSB tabell 12972 (ssb_konkurser_kommune/_naering):
+//    komplette tall per kommune/næring/år fra 2009 og fremover.
+//  - LIVE selskapsliste fra brreg.v_konkurser (enhetsregisteret): kun pågående
+//    konkursbo — ferdigbehandlede bo slettes fra Enhetsregisteret, så denne
+//    listen er ikke historisk komplett (se tools/load-konkurser.py).
 export async function GET(req: NextRequest) {
-  const aarParam = (req.nextUrl.searchParams.get("aar") ?? "").trim();
-  const aar = /^\d{4}$/.test(aarParam) ? Number(aarParam) : null;
-  const bransje = (req.nextUrl.searchParams.get("bransje") ?? "").trim();
-
-  const aarFiltre = aar != null ? sql`and konkursaar = ${aar}` : sql``;
+  const sp = req.nextUrl.searchParams;
+  const aarParam = (sp.get("aar") ?? "").trim();
+  const naering = (sp.get("naering") ?? "").trim();
 
   try {
-    const [{ totalt_alle_tid, med_kjent_dato }] = await sql<
-      { totalt_alle_tid: string; med_kjent_dato: string }[]
-    >`
-      select count(*) as totalt_alle_tid, count(konkursdato) as med_kjent_dato
-      from brreg.v_konkurser`;
-
+    // Årsserie for hele landet ('0N'). Tom => SSB-data er ikke lastet ennå.
     const aarListe = await sql<{ aar: number; antall: string }[]>`
-      select konkursaar as aar, count(*) as antall
-      from brreg.v_konkurser
-      where konkursaar is not null
-      group by 1 order by 1 desc`;
+      select aar, konkurser as antall from brreg.ssb_konkurser_kommune
+      where region_kode = '0N' order by aar`;
 
-    const [{ totalt }] = await sql<{ totalt: string }[]>`
-      select count(*) as totalt from brreg.v_konkurser where true ${aarFiltre}`;
+    const harSsb = aarListe.length > 0;
+    const sisteAar = harSsb ? aarListe[aarListe.length - 1].aar : null;
+    const valgtAar = /^\d{4}$/.test(aarParam) ? Number(aarParam) : sisteAar;
 
-    const bransjer = await sql<{ bransje: string; antall: string }[]>`
-      select coalesce(bransje, '(ukjent)') as bransje, count(*) as antall
-      from brreg.v_konkurser where true ${aarFiltre}
-      group by 1 order by antall desc`;
-
-    const kommuner = await sql<{ kommune: string; antall: string }[]>`
-      select coalesce(kommune, '(ukjent)') as kommune, count(*) as antall
-      from brreg.v_konkurser where true ${aarFiltre}
-      group by 1 order by antall desc`;
-
-    const bransjeTrend = bransje
-      ? await sql<{ aar: number; antall: string }[]>`
-          select konkursaar as aar, count(*) as antall
-          from brreg.v_konkurser
-          where konkursaar is not null and coalesce(bransje, '(ukjent)') = ${bransje}
-          group by 1 order by 1`
+    const kommuner = harSsb && valgtAar != null
+      ? await sql<{ kode: string; navn: string; antall: string }[]>`
+          select region_kode as kode, split_part(region, ' - ', 1) as navn, konkurser as antall
+          from brreg.ssb_konkurser_kommune
+          where aar = ${valgtAar} and length(region_kode) = 4 and konkurser > 0
+          order by konkurser desc, navn`
       : [];
 
+    // Næringer: 2-sifrede NACE-avdelinger (matcher naeringskode1-prefiks).
+    const naeringer = harSsb && valgtAar != null
+      ? await sql<{ kode: string; navn: string; antall: string }[]>`
+          select naering_kode as kode, naering as navn, konkurser as antall
+          from brreg.ssb_konkurser_naering
+          where aar = ${valgtAar} and naering_kode ~ '^[0-9]{2}$' and konkurser > 0
+          order by konkurser desc, navn`
+      : [];
+
+    const naeringTrend = naering
+      ? await sql<{ aar: number; antall: string }[]>`
+          select aar, konkurser as antall from brreg.ssb_konkurser_naering
+          where naering_kode = ${naering} order by aar`
+      : [];
+
+    // Live-tall fra enhetsregisteret (pågående bo).
+    const [live] = await sql<{ paagaaende: string; med_dato: string }[]>`
+      select count(*) as paagaaende, count(konkursdato) as med_dato
+      from brreg.v_konkurser`;
+
     return NextResponse.json({
-      totaltAlleTid: totalt_alle_tid,
-      medKjentDato: med_kjent_dato,
+      harSsb,
       aarListe,
-      valgtAar: aar,
-      totalt,
-      bransjer,
+      sisteAar,
+      valgtAar,
       kommuner,
-      bransjeTrend,
+      naeringer,
+      naeringTrend,
+      paagaaende: live?.paagaaende ?? "0",
+      paagaaendeMedDato: live?.med_dato ?? "0",
     });
   } catch {
     return NextResponse.json({
-      totaltAlleTid: "0", medKjentDato: "0", aarListe: [], valgtAar: null,
-      totalt: "0", bransjer: [], kommuner: [], bransjeTrend: [],
+      harSsb: false, aarListe: [], sisteAar: null, valgtAar: null,
+      kommuner: [], naeringer: [], naeringTrend: [],
+      paagaaende: "0", paagaaendeMedDato: "0",
     });
   }
 }

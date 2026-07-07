@@ -64,3 +64,23 @@ ORDER BY antall DESC;
 -- REFRESH MATERIALIZED VIEW brreg.mv_konkurser_per_aar;
 -- REFRESH MATERIALIZED VIEW brreg.mv_konkurser_bransje_aar;
 -- REFRESH MATERIALIZED VIEW brreg.mv_konkurser_kommune;
+
+-- ============================================================
+-- Offisiell konkursstatistikk fra SSB tabell 12972 (komplett historikk
+-- 2009->, i motsetning til enheter.konkurs som kun dekker pågående bo).
+-- Fylles av tools/load-konkurs-statistikk.py.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS brreg.ssb_konkurser_kommune (
+    region_kode TEXT,   -- '0N' = hele landet, 2 siffer = fylke, 4 siffer = kommune
+    region      TEXT,
+    aar         INT,
+    konkurser   BIGINT,
+    PRIMARY KEY (region_kode, aar)
+);
+CREATE TABLE IF NOT EXISTS brreg.ssb_konkurser_naering (
+    naering_kode TEXT,  -- '00-99' = alle, 2 siffer = NACE-avdeling, bokstav = seksjon
+    naering      TEXT,
+    aar          INT,
+    konkurser    BIGINT,
+    PRIMARY KEY (naering_kode, aar)
+);
