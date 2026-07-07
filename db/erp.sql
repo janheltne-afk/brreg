@@ -47,8 +47,10 @@ CREATE TABLE IF NOT EXISTS brreg.selskap_erp (
 CREATE INDEX IF NOT EXISTS idx_selskap_erp_orgnr  ON brreg.selskap_erp (organisasjonsnummer);
 CREATE INDEX IF NOT EXISTS idx_selskap_erp_system ON brreg.selskap_erp (erp_system);
 
--- Kjente Infor M3-kunder.
+-- Kjente ERP-kunder (manuelt registrert).
 INSERT INTO brreg.selskap_erp (organisasjonsnummer, erp_system, erp_scope, status) VALUES
+    ('923609016', 'SAP S/4HANA', 'TBD', 'Kjent av deg'),  -- Equinor ASA
+    ('931693670', 'Infor LN', 'TBD', 'Kjent av deg'),     -- AKVA Group ASA
     ('843495672', 'Infor M3', 'TBD', 'Kjent av deg'),  -- Berggård Amundsen & Co AS
     ('911382008', 'Infor M3', 'TBD', 'Kjent av deg'),  -- Elkem ASA
     ('997639588', 'Infor M3', 'TBD', 'Kjent av deg'),  -- Europris ASA
