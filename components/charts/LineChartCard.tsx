@@ -28,19 +28,19 @@ export function LineChartCard({
       <h3 className="mb-3 text-sm font-semibold">{title}</h3>
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={data} margin={{ top: 4, right: 12, bottom: 4, left: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e2a44" />
-          <XAxis dataKey={xKey} tick={{ fill: "#93a1bd", fontSize: 11 }} />
-          <YAxis tick={{ fill: "#93a1bd", fontSize: 11 }} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+          <XAxis dataKey={xKey} tick={{ fill: "var(--muted)", fontSize: 11 }} />
+          <YAxis tick={{ fill: "var(--muted)", fontSize: 11 }} />
           <Tooltip
             contentStyle={{
-              background: "#111a2e",
-              border: "1px solid #1e2a44",
-              borderRadius: 10,
-              color: "#e6ecf7",
+              background: "var(--panel-solid)",
+              border: "1px solid var(--border)",
+              borderRadius: 8,
+              color: "var(--text)",
             }}
             formatter={(v: number) => new Intl.NumberFormat("nb-NO").format(v)}
           />
-          <Line type="monotone" dataKey={yKey} stroke="#4f8cff" strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey={yKey} stroke="var(--chart-line)" strokeWidth={2.5} dot={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>

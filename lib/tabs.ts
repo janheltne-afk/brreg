@@ -13,6 +13,7 @@ export const tabs: Tab[] = [
   { slug: "investering", navn: "Investering", beskrivelse: "Finn økonomisk sterke selskaper per kommune" },
   { slug: "konkurser", navn: "Konkurser", beskrivelse: "Konkursregisteret: analyse per bransje, kommune og år" },
   { slug: "erp", navn: "ERP-system", beskrivelse: "Selskaper filtrert på hvilket ERP-system de bruker" },
+  { slug: "forretningsprosesser", navn: "Forretningsprosesser", beskrivelse: "Bransjer, prosesskart og drilldown fra Level 1 til Level 4" },
   { slug: "kjoretoy", navn: "Kjøretøy", beskrivelse: "Registrerte kjøretøy i Norge etter merke" },
   { slug: "suksesshistorier", navn: "Suksesshistorier", beskrivelse: "100 norske byggere og investorer – historie + selskapsstruktur" },
   { slug: "bokmerker", navn: "Bokmerker", beskrivelse: "Lagrede selskap og aksjonærer" },
