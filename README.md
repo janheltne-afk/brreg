@@ -56,6 +56,7 @@ tools/json_array_to_ndjson.py              Strøm-konverter JSON-array → NDJSO
 hop/workflows/brreg-regnskap.hwf           Henter årsregnskap (nøkkeltall) per org
 hop/pipelines/brreg-regnskap-last.hpl      Per-org regnskap-oppslag → upsert
 db/konkurs.sql                             Konkursregisteret: analyseviews (bransje/kommune/år)
+db/erp.sql                                 ERP-system per selskap + filtrerbar masterliste
 ```
 
 ## Konkursregisteret (bransjeanalyse)
@@ -77,6 +78,19 @@ Kjør `db/konkurs.sql` én gang mot databasen (se `tools/run-sql.sh -f db/konkur
 og `REFRESH MATERIALIZED VIEW brreg.mv_konkurser_...` etter hver nye
 enhets-sync/seed. Dashboardet viser dette i fanen **Konkurser**
 (`app/konkurser`, `app/api/konkurser`).
+
+## ERP-system per selskap
+
+`db/erp.sql` legger til `brreg.erp_systemer` (masterliste over kjente
+ERP-systemer) og `brreg.selskap_erp` (selskap ↔ ERP-system, med `erp_scope`,
+`status` og `notat`). Data legges inn manuelt (SQL-insert) etter hvert som
+ERP-system blir kjent for et selskap — det finnes ingen åpen kilde for dette.
+
+Kjør `tools/run-sql.sh -f db/erp.sql` én gang mot databasen. Dashboardet:
+- Viser ERP-system som badge på selskapssiden når det er kjent (**Selskaper**-fanen).
+- Fanen **ERP-system** (`app/erp`, `app/api/erp-systemer`, `app/api/erp-selskaper`)
+  lar deg filtrere på ERP-system og bla i selskapene som bruker det. Filteret
+  viser kun systemer som faktisk har registrerte selskaper, ikke hele masterlisten.
 
 ## Regnskap (årsregnskap-nøkkeltall)
 

@@ -36,6 +36,7 @@ type Detalj = {
     verdi: string | null;
   }[];
   eierHistorikkStor?: boolean;
+  erp: { erp_system: string; erp_scope: string | null; status: string | null; notat: string | null }[];
 };
 
 export function SelskapSok({ initialOrgnr }: { initialOrgnr?: string }) {
@@ -211,6 +212,25 @@ export function SelskapSok({ initialOrgnr }: { initialOrgnr?: string }) {
                 </div>
               ) : null}
             </div>
+            {detalj && detalj.erp && detalj.erp.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2 border-t pt-3" style={{ borderColor: "var(--border)" }}>
+                {detalj.erp.map((s) => (
+                  <span
+                    key={s.erp_system}
+                    className="rounded-lg px-2.5 py-1 text-xs font-medium"
+                    style={{ border: "1px solid var(--border)", color: "var(--accent)" }}
+                    title={s.notat ?? undefined}
+                  >
+                    ERP: {s.erp_system}
+                    {(s.erp_scope || s.status) && (
+                      <span className="ml-1 font-normal" style={{ color: "var(--muted)" }}>
+                        ({[s.erp_scope, s.status].filter(Boolean).join(" · ")})
+                      </span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {rg && (

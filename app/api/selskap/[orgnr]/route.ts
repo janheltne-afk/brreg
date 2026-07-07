@@ -91,6 +91,13 @@ export async function GET(
           order by a.aar`
       : [];
 
+    const erp = await sql<
+      { erp_system: string; erp_scope: string | null; status: string | null; notat: string | null }[]
+    >`
+      select erp_system, erp_scope, status, notat
+      from brreg.selskap_erp where organisasjonsnummer = ${orgnr}
+      order by erp_system`;
+
     // Roller (styre, daglig leder m.m.) – kun aktive.
     const roller = await sql<
       { rolletype_kode: string; rolletype_beskrivelse: string; person_navn: string | null; person_fodselsdato: string | null; enhet_navn: string | null }[]
@@ -103,8 +110,8 @@ export async function GET(
         when 'MEDL' then 4 when 'VARA' then 5 else 9 end, rekkefolge nulls last`;
 
     const eierHistorikkStor = Boolean(sisteAar && maksEiere > 5000);
-    return NextResponse.json({ enhet: enhet ?? null, morNavn: mor?.navn ?? null, regnskap: regnskap ?? null, perAar, sisteAar, kurs, toppEiere, eierHistorikk, eierHistorikkStor, roller });
+    return NextResponse.json({ enhet: enhet ?? null, morNavn: mor?.navn ?? null, regnskap: regnskap ?? null, perAar, sisteAar, kurs, toppEiere, eierHistorikk, eierHistorikkStor, roller, erp });
   } catch {
-    return NextResponse.json({ enhet: null, morNavn: null, regnskap: null, perAar: [], sisteAar: null, toppEiere: [], eierHistorikk: [], eierHistorikkStor: false, roller: [] });
+    return NextResponse.json({ enhet: null, morNavn: null, regnskap: null, perAar: [], sisteAar: null, toppEiere: [], eierHistorikk: [], eierHistorikkStor: false, roller: [], erp: [] });
   }
 }
