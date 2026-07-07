@@ -69,7 +69,8 @@ function Rangliste({
                 className="h-2 rounded-full"
                 style={{
                   width: maks ? `${(Number(r.antall) / maks) * 100}%` : "0%",
-                  background: valgt === r.navn ? "#4f8cff" : "var(--accent)",
+                  background: "var(--accent)",
+                  opacity: valgt === r.navn ? 1 : 0.55,
                 }}
               />
             </div>

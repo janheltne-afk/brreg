@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { LineChartCard } from "@/components/charts/LineChartCard";
 import { BokmerkeKnapp } from "@/components/BokmerkeKnapp";
+import { ProsessKart } from "@/components/ProsessKart";
 import { antall, kroner, dato } from "@/lib/format";
+import type { FpBransjeDetalj } from "@/lib/forretningsprosesser";
 
 type Treff = {
   organisasjonsnummer: string;
@@ -37,6 +39,7 @@ type Detalj = {
   }[];
   eierHistorikkStor?: boolean;
   erp: { erp_system: string; erp_scope: string | null; status: string | null; notat: string | null }[];
+  forretningsprosesser: FpBransjeDetalj | null;
 };
 
 export function SelskapSok({ initialOrgnr }: { initialOrgnr?: string }) {
@@ -283,6 +286,22 @@ export function SelskapSok({ initialOrgnr }: { initialOrgnr?: string }) {
                 Regnskapstall fra Brønnøysundregistrene gjelder siste innsendte årsregnskap. Eldre
                 årstall er ikke tilgjengelig i åpne data. Eierhistorikken under viser utviklingen bakover i tid.
               </p>
+            </div>
+          )}
+
+          {detalj?.forretningsprosesser && (
+            <div className="space-y-2">
+              <div>
+                <h3 className="text-sm font-semibold">Forretningsprosesser</h3>
+                <p className="text-xs" style={{ color: "var(--muted)" }}>
+                  Basert på næringskode {String(e.naeringskode1 ?? "")} ({String(e.naeringskode1_beskrivelse ?? "")}) –
+                  typisk prosesskart for bransjen, ikke selskapsspesifikke data.
+                </p>
+              </div>
+              <ProsessKart
+                detalj={detalj.forretningsprosesser}
+                tittel={`${detalj.forretningsprosesser.bransje.navn} – prosesskart`}
+              />
             </div>
           )}
 

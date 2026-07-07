@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
+import { hentBransjeForNaeringskode } from "@/lib/forretningsprosesserQuery";
 
 export const runtime = "nodejs";
 
@@ -109,9 +110,13 @@ export async function GET(
         when 'INNH' then 0 when 'DAGL' then 1 when 'LEDE' then 2 when 'NEST' then 3
         when 'MEDL' then 4 when 'VARA' then 5 else 9 end, rekkefolge nulls last`;
 
+    // Forretningsprosesser knyttet til enhetens næringskode. Egen try/catch slik
+    // at manglende fp_*-tabeller (ikke kjørt ennå) ikke velter hele selskapsoppslaget.
+    const forretningsprosesser = await hentBransjeForNaeringskode(enhet?.naeringskode1 as string | undefined).catch(() => null);
+
     const eierHistorikkStor = Boolean(sisteAar && maksEiere > 5000);
-    return NextResponse.json({ enhet: enhet ?? null, morNavn: mor?.navn ?? null, regnskap: regnskap ?? null, perAar, sisteAar, kurs, toppEiere, eierHistorikk, eierHistorikkStor, roller, erp });
+    return NextResponse.json({ enhet: enhet ?? null, morNavn: mor?.navn ?? null, regnskap: regnskap ?? null, perAar, sisteAar, kurs, toppEiere, eierHistorikk, eierHistorikkStor, roller, erp, forretningsprosesser });
   } catch {
-    return NextResponse.json({ enhet: null, morNavn: null, regnskap: null, perAar: [], sisteAar: null, toppEiere: [], eierHistorikk: [], eierHistorikkStor: false, roller: [], erp: [] });
+    return NextResponse.json({ enhet: null, morNavn: null, regnskap: null, perAar: [], sisteAar: null, toppEiere: [], eierHistorikk: [], eierHistorikkStor: false, roller: [], erp: [], forretningsprosesser: null });
   }
 }
