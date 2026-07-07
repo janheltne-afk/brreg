@@ -30,6 +30,20 @@ export type FpProsess = {
   children: FpProsess[];
 };
 
+export type FpKatalogKilde = "database" | "seed";
+
+export type FpBransjeListeResponse = {
+  bransjer: FpBransje[];
+  source: FpKatalogKilde;
+};
+
+export type FpBransjeDetalj = {
+  bransje: FpBransje;
+  naeringskoder: FpNaeringskode[];
+  prosesser: FpProsess[];
+  source: FpKatalogKilde;
+};
+
 export type FpProsessRad = Omit<FpProsess, "children"> & {
   bransjeSortering?: number | null;
 };

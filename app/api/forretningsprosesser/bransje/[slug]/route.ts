@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { byggProsessTre, type FpProsessRad } from "@/lib/forretningsprosesser";
+import { hentSeedBransjeDetalj } from "@/lib/forretningsprosesserSeed";
 
 export const runtime = "nodejs";
 
@@ -49,6 +50,9 @@ export async function GET(
       limit 1`;
 
     if (!bransje) {
+      const seed = hentSeedBransjeDetalj(slug);
+      if (seed) return NextResponse.json(seed);
+
       return NextResponse.json({ error: "Bransje ikke funnet" }, { status: 404 });
     }
 
@@ -96,6 +100,11 @@ export async function GET(
       bransjeSortering: p.bransje_sortering,
     }));
 
+    if (prosesser.length === 0) {
+      const seed = hentSeedBransjeDetalj(slug);
+      if (seed) return NextResponse.json(seed);
+    }
+
     return NextResponse.json({
       bransje: {
         slug: bransje.slug,
@@ -109,8 +118,12 @@ export async function GET(
         beskrivelse: n.beskrivelse,
       })),
       prosesser: byggProsessTre(prosesser),
+      source: "database",
     });
   } catch {
-    return NextResponse.json({ error: "Kunne ikke hente forretningsprosesser" }, { status: 500 });
+    const seed = hentSeedBransjeDetalj(slug);
+    if (seed) return NextResponse.json(seed);
+
+    return NextResponse.json({ error: "Bransje ikke funnet" }, { status: 404 });
   }
 }

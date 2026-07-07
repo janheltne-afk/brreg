@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
+import { hentSeedBransjer } from "@/lib/forretningsprosesserSeed";
 
 export const runtime = "nodejs";
 
@@ -26,6 +27,13 @@ export async function GET() {
       group by b.id, b.slug, b.navn, b.kortnavn, b.beskrivelse, b.ikon, b.sortering
       order by b.sortering, b.navn`;
 
+    if (rader.length === 0) {
+      return NextResponse.json({
+        bransjer: hentSeedBransjer(),
+        source: "seed",
+      });
+    }
+
     return NextResponse.json({
       bransjer: rader.map((b) => ({
         slug: b.slug,
@@ -36,8 +44,12 @@ export async function GET() {
         naeringskodeAntall: b.naeringskode_antall,
         prosessAntall: b.prosess_antall,
       })),
+      source: "database",
     });
   } catch {
-    return NextResponse.json({ bransjer: [] });
+    return NextResponse.json({
+      bransjer: hentSeedBransjer(),
+      source: "seed",
+    });
   }
 }

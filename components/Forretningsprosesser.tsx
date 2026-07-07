@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { FpBransje, FpNaeringskode, FpProsess } from "@/lib/forretningsprosesser";
-
-type BransjeDetalj = {
-  bransje: FpBransje;
-  naeringskoder: FpNaeringskode[];
-  prosesser: FpProsess[];
-};
+import type {
+  FpBransje,
+  FpBransjeDetalj,
+  FpBransjeListeResponse,
+  FpKatalogKilde,
+  FpProsess,
+} from "@/lib/forretningsprosesser";
 
 type Valg = {
   root: FpProsess | null;
@@ -20,17 +20,21 @@ const TOMT_VALG: Valg = { root: null, l2: null, l3: null, l4: null };
 
 export function Forretningsprosesser() {
   const [bransjer, setBransjer] = useState<FpBransje[]>([]);
-  const [detalj, setDetalj] = useState<BransjeDetalj | null>(null);
+  const [detalj, setDetalj] = useState<FpBransjeDetalj | null>(null);
   const [valg, setValg] = useState<Valg>(TOMT_VALG);
   const [laster, setLaster] = useState(true);
   const [feil, setFeil] = useState<string | null>(null);
+  const [kilde, setKilde] = useState<FpKatalogKilde | null>(null);
 
   useEffect(() => {
     let aktiv = true;
     fetch("/api/forretningsprosesser/bransjer")
       .then((r) => r.json())
-      .then((d) => {
-        if (aktiv) setBransjer(d.bransjer ?? []);
+      .then((d: FpBransjeListeResponse) => {
+        if (aktiv) {
+          setBransjer(d.bransjer ?? []);
+          setKilde(d.source ?? "database");
+        }
       })
       .catch(() => {
         if (aktiv) setFeil("Kunne ikke hente bransjer.");
@@ -50,7 +54,9 @@ export function Forretningsprosesser() {
     try {
       const r = await fetch(`/api/forretningsprosesser/bransje/${encodeURIComponent(slug)}`);
       if (!r.ok) throw new Error("Kunne ikke hente bransje.");
-      setDetalj(await r.json());
+      const d = (await r.json()) as FpBransjeDetalj;
+      setDetalj(d);
+      setKilde(d.source ?? "database");
     } catch {
       setFeil("Kunne ikke hente prosesskartet for bransjen.");
     } finally {
@@ -79,28 +85,40 @@ export function Forretningsprosesser() {
         </div>
       )}
 
-      {!detalj && (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {bransjer.map((b) => (
-            <button
-              key={b.slug}
-              onClick={() => lastBransje(b.slug)}
-              className="card min-h-[148px] p-4 text-left"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <IndustryBadge label={b.kortnavn ?? b.navn} />
-                <span className="rounded-full px-2 py-1 text-xs" style={{ border: "1px solid var(--border)", color: "var(--muted)" }}>
-                  {b.prosessAntall ?? 0} L1
-                </span>
-              </div>
-              <h3 className="mt-3 text-base font-semibold">{b.navn}</h3>
-              <p className="mt-2 text-sm leading-5" style={{ color: "var(--muted)" }}>{b.beskrivelse}</p>
-              <div className="mt-3 text-xs" style={{ color: "var(--accent)" }}>
-                {b.naeringskodeAntall ?? 0} naeringskode-prefixer
-              </div>
-            </button>
-          ))}
+      {kilde === "seed" && (
+        <div className="rounded-lg px-4 py-3 text-sm" style={{ border: "1px solid var(--border)", background: "rgba(255,255,255,0.035)", color: "var(--muted)" }}>
+          Viser seedet kataloginnhold fordi databaseinnholdet for forretningsprosesser ikke er tilgjengelig enna.
         </div>
+      )}
+
+      {!detalj && (
+        bransjer.length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {bransjer.map((b) => (
+              <button
+                key={b.slug}
+                onClick={() => lastBransje(b.slug)}
+                className="card min-h-[148px] p-4 text-left"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <IndustryBadge label={b.kortnavn ?? b.navn} />
+                  <span className="rounded-full px-2 py-1 text-xs" style={{ border: "1px solid var(--border)", color: "var(--muted)" }}>
+                    {b.prosessAntall ?? 0} L1
+                  </span>
+                </div>
+                <h3 className="mt-3 text-base font-semibold">{b.navn}</h3>
+                <p className="mt-2 text-sm leading-5" style={{ color: "var(--muted)" }}>{b.beskrivelse}</p>
+                <div className="mt-3 text-xs" style={{ color: "var(--accent)" }}>
+                  {b.naeringskodeAntall ?? 0} naeringskode-prefixer
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="card p-5 text-sm" style={{ color: "var(--muted)" }}>
+            Ingen bransjer er tilgjengelige i katalogen akkurat na.
+          </div>
+        )
       )}
 
       {detalj && (
