@@ -66,3 +66,49 @@ INSERT INTO brreg.selskap_erp (organisasjonsnummer, erp_system, erp_scope, statu
     ('985748128', 'Infor M3', 'TBD', 'Kjent av deg')   -- Øglænd System AS
 ON CONFLICT (organisasjonsnummer, erp_system)
 DO UPDATE SET erp_scope = EXCLUDED.erp_scope, status = EXCLUDED.status, oppdatert_dato = now();
+
+-- Medlemmer av norsk Infor-brukerforening: bruker M3 eller LN, produkt ANTATT
+-- ut fra bransjeprofil (M3 = distribusjon/retail/mat/fôr/prosess/møbel/mote,
+-- LN = diskret og prosjektbasert industri/maritim/elektronikk).
+-- Org.nr verifisert mot brreg-API-et. DO NOTHING så bekreftede rader aldri overskrives.
+INSERT INTO brreg.selskap_erp (organisasjonsnummer, erp_system, erp_scope, status, notat) VALUES
+    -- Antatt Infor M3
+    ('938536562', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; verkstedutstyr-distribusjon'),      -- Andr. L. Riis AS
+    ('937843860', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; fiskefôr (prosess)'),               -- BioMar AS
+    ('810859482', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; møbelproduksjon'),                  -- Brunstad AS
+    ('958457952', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; Norgesmøllene (mat)'),              -- Cernova AS
+    ('938786054', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; dagligvare/retail'),                -- Coop Midt-Norge SA
+    ('938097119', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; sykkel-engros'),                    -- Cycleurope Norge AS
+    ('816051142', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; stål/byggevarer-engros'),           -- E.A. Smith AS
+    ('976516575', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; sko engros/retail (medlemsnavn: Euro Sko Norge)'), -- Eurosko Gruppen AS
+    ('975856844', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; fôrproduksjon'),                    -- Fiskå Mølle AS
+    ('932736578', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; møbler (HÅG m.fl.)'),               -- Flokk Holding AS
+    ('912007782', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; belysning (volumproduksjon)'),      -- Glamox AS
+    ('934505557', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; metall/prosess'),                   -- Ineos Tyssedal AS
+    ('913807146', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; jernvare-engros'),                  -- Jernia AS
+    ('989519247', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; ovnsproduksjon + distribusjon'),    -- Jøtul AS
+    ('913344162', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; næringsmidler'),                    -- Kavli Holding AS
+    ('910629085', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; kornvarer (mat)'),                  -- Lantmannen Cerealia AS
+    ('964118191', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; sjømat (prosess)'),                 -- Mowi ASA
+    ('891806752', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; vindu/dør-produksjon'),             -- NorDan Gruppen AS
+    ('971047917', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; dagligvare (IT for NorgesGruppen)'), -- Norgesgruppen Data AS
+    ('985933197', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; fiskekroker/sportsutstyr'),         -- O Mustad & Søn AS
+    ('962018025', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; drikkevarer'),                      -- Oskar Sylte Mineralvannsfabrikk AS
+    ('918375643', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; utstyrs-engros/service'),           -- Primulator AS
+    ('983599060', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; membraner/plast (prosess)'),        -- Protan AS
+    ('944178228', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; gjenvinning/miljøtjenester'),       -- SAR AS
+    ('920044735', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; sjømat (reker)'),                   -- Stella Polaris AS
+    ('916329717', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; korn/fôr'),                         -- Strand Unikorn AS
+    ('925349607', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; spedisjon/logistikk'),              -- Tyrholm & Farstad AS
+    ('979490674', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; mote-retail (kjent M3-segment)'),   -- Varner AS
+    ('925971154', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; batterimaterialer (prosess, Elkem-JV)'), -- Vianode AS
+    ('957560199', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; mote-retail'),                      -- Voice Norge AS
+    ('953803674', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; kjemi (prosess)'),                  -- Wilhelmsen Chemicals AS
+    -- Antatt Infor LN
+    ('995884070', 'Infor LN', 'TBD', 'Antatt', 'Infor-brukerforening; thrustere/maritim (prosjektbasert)'), -- Brunvoll AS
+    ('930400580', 'Infor LN', 'TBD', 'Antatt', 'Infor-brukerforening; induksjonssystemer (tidl. EFD Induction)'), -- ENRX AS
+    ('982457602', 'Infor LN', 'TBD', 'Antatt', 'Infor-brukerforening; maritim elektro (prosjektbasert)'), -- Møre Electric Group AS
+    ('914853052', 'Infor LN', 'TBD', 'Antatt', 'Infor-brukerforening; verft/offshore (prosjektbasert)'),  -- AS Nymo
+    ('920652964', 'Infor LN', 'TBD', 'Antatt', 'Infor-brukerforening; kraftelektronikk (diskret)'),       -- Pixii AS
+    ('914561973', 'Infor LN', 'TBD', 'Antatt', 'Infor-brukerforening; hjelpemidler (diskret montasje)')   -- Topro Industri AS
+ON CONFLICT (organisasjonsnummer, erp_system) DO NOTHING;
