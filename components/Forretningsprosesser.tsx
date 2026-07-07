@@ -231,7 +231,12 @@ function ProcessCard({ prosess, aktiv, onClick }: { prosess: FpProsess; aktiv: b
           {prosess.children.length} underprosesser
         </span>
       </div>
-      <h5 className="mt-2 text-base font-semibold">{prosess.navn}</h5>
+      <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <h5 className="text-base font-semibold">{prosess.navn}</h5>
+        <span className="text-sm leading-5" style={{ color: "var(--accent)" }}>
+          {prosess.norskNavn}
+        </span>
+      </div>
       <p className="mt-2 text-sm leading-5" style={{ color: "var(--muted)" }}>{prosess.beskrivelse}</p>
     </button>
   );
@@ -253,7 +258,7 @@ function ProcessLine({
       <div>
         <h4 className="text-sm font-semibold">Level {level}</h4>
         <p className="text-xs" style={{ color: "var(--muted)" }}>
-          {parent.navn}
+          {parent.navn} / {parent.norskNavn}
         </p>
       </div>
       <div className="overflow-x-auto pb-2">
@@ -264,7 +269,7 @@ function ProcessLine({
               <div key={p.slug} className="flex items-center gap-2">
                 <button
                   onClick={() => onSelect(p)}
-                  className="min-h-[92px] w-56 rounded-xl p-3 text-left transition-colors"
+                  className="min-h-[112px] w-64 rounded-xl p-3 text-left transition-colors"
                   style={{
                     border: aktiv ? "1px solid rgba(91, 140, 255, 0.85)" : "1px solid var(--border)",
                     background: aktiv ? "rgba(91, 140, 255, 0.14)" : "rgba(255,255,255,0.035)",
@@ -272,6 +277,9 @@ function ProcessLine({
                 >
                   <div className="text-xs" style={{ color: "var(--muted)" }}>Steg {i + 1}</div>
                   <div className="mt-1 text-sm font-semibold leading-5">{p.navn}</div>
+                  <div className="mt-1 text-xs leading-4" style={{ color: "var(--accent)" }}>
+                    {p.norskNavn}
+                  </div>
                   {p.children.length > 0 && (
                     <div className="mt-2 text-xs" style={{ color: "var(--accent)" }}>
                       {p.children.length} neste
@@ -298,7 +306,12 @@ function ProsessDetalj({ prosess }: { prosess: FpProsess }) {
           <div className="text-xs font-semibold uppercase" style={{ color: "var(--accent)" }}>
             Level {prosess.level}
           </div>
-          <h4 className="mt-1 text-xl font-semibold">{prosess.navn}</h4>
+          <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h4 className="text-xl font-semibold">{prosess.navn}</h4>
+            <span className="text-base" style={{ color: "var(--accent)" }}>
+              {prosess.norskNavn}
+            </span>
+          </div>
           <p className="mt-2 max-w-3xl text-sm leading-6" style={{ color: "var(--muted)" }}>
             {prosess.beskrivelse}
           </p>
