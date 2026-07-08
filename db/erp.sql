@@ -104,11 +104,19 @@ INSERT INTO brreg.selskap_erp (organisasjonsnummer, erp_system, erp_scope, statu
     ('925971154', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; batterimaterialer (prosess, Elkem-JV)'), -- Vianode AS
     ('957560199', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; mote-retail'),                      -- Voice Norge AS
     ('953803674', 'Infor M3', 'TBD', 'Antatt', 'Infor-brukerforening; kjemi (prosess)'),                  -- Wilhelmsen Chemicals AS
-    -- Antatt Infor LN
-    ('995884070', 'Infor LN', 'TBD', 'Antatt', 'Infor-brukerforening; thrustere/maritim (prosjektbasert)'), -- Brunvoll AS
-    ('930400580', 'Infor LN', 'TBD', 'Antatt', 'Infor-brukerforening; induksjonssystemer (tidl. EFD Induction)'), -- ENRX AS
-    ('982457602', 'Infor LN', 'TBD', 'Antatt', 'Infor-brukerforening; maritim elektro (prosjektbasert)'), -- Møre Electric Group AS
-    ('914853052', 'Infor LN', 'TBD', 'Antatt', 'Infor-brukerforening; verft/offshore (prosjektbasert)'),  -- AS Nymo
-    ('920652964', 'Infor LN', 'TBD', 'Antatt', 'Infor-brukerforening; kraftelektronikk (diskret)'),       -- Pixii AS
-    ('914561973', 'Infor LN', 'TBD', 'Antatt', 'Infor-brukerforening; hjelpemidler (diskret montasje)')   -- Topro Industri AS
+    -- Bekreftet av bruker (opprinnelig antatt LN — korrigert)
+    ('995884070', 'Infor M3', 'TBD', 'Kjent av deg', 'Infor-brukerforening'),                             -- Brunvoll AS
+    ('914853052', 'Infor M3', 'TBD', 'Kjent av deg', 'Infor-brukerforening'),                             -- AS Nymo
+    ('982457602', 'Infor M3', 'TBD', 'Kjent av deg', 'Infor-brukerforening'),                             -- Møre Electric Group AS
+    ('914561973', 'Infor M3', 'TBD', 'Kjent av deg', 'Infor-brukerforening'),                             -- Topro Industri AS
+    ('930400580', 'Infor CloudSuite Industrial', 'TBD', 'Kjent av deg', 'Infor CloudSuite Industrial (Enterprise Manufacturing)'), -- ENRX AS
+    ('920652964', 'Infor CloudSuite Industrial', 'TBD', 'Kjent av deg', 'CloudSuite Industrial Enterprise + Factory Track + Infor OS + custom grensesnitt mot service-/bankapplikasjoner') -- Pixii AS
 ON CONFLICT (organisasjonsnummer, erp_system) DO NOTHING;
+
+-- Opprydding: disse seks lå tidligere inne som antatt 'Infor LN' (feil gjetting,
+-- korrigert av bruker over). Fjerner LN-radene hvis en eldre versjon av denne
+-- fila er kjørt mot databasen.
+DELETE FROM brreg.selskap_erp
+WHERE erp_system = 'Infor LN' AND status = 'Antatt'
+  AND organisasjonsnummer IN
+      ('995884070', '930400580', '982457602', '914853052', '920652964', '914561973');
