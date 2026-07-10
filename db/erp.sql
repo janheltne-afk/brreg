@@ -29,7 +29,8 @@ INSERT INTO brreg.erp_systemer (navn) VALUES
     ('Fiken'), ('Conta'), ('Systima'), ('Duett'), ('Zirius'), ('Luca'), ('Snapbooks'),
     ('CloudOffice ERP'), ('WebOfficeOne'), ('Agro Økonomi'),
     ('Odoo'), ('ERPNext'), ('Dolibarr'),
-    ('Sage X3'), ('Epicor Kinetic'), ('Acumatica'), ('QAD Adaptive ERP')
+    ('Sage X3'), ('Epicor Kinetic'), ('Acumatica'), ('QAD Adaptive ERP'),
+    ('RamBase QMS')
 ON CONFLICT (navn) DO NOTHING;
 
 -- Selskap ↔ ERP-system. organisasjonsnummer har bevisst ingen FK mot
@@ -120,3 +121,39 @@ DELETE FROM brreg.selskap_erp
 WHERE erp_system = 'Infor LN' AND status = 'Antatt'
   AND organisasjonsnummer IN
       ('995884070', '930400580', '982457602', '914853052', '920652964', '914561973');
+
+-- Norske RamBase-kunder fra offentlige kundecase på rambase.com
+-- (resources/customer-references). ERP = full RamBase Cloud ERP;
+-- QMS-kundene bruker kun kvalitetsstyringsmodulen (kjører annet ERP i bunn)
+-- og ligger som eget system 'RamBase QMS' så filteret skiller dem.
+-- Org.nr verifisert mot brreg-API-et.
+INSERT INTO brreg.selskap_erp (organisasjonsnummer, erp_system, erp_scope, status, notat) VALUES
+    -- RamBase Cloud ERP
+    ('974533014', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; lagerrobotikk'),        -- AutoStore AS
+    ('981649230', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; maskinering'),           -- Aarbakke AS
+    ('974533146', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase; RamBase ble utviklet i Hatteland-konsernet'), -- Hatteland Technology AS
+    ('982378664', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; EMS/elektronikk'),       -- Westcontrol AS
+    ('979390718', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; subsea/ROV'),            -- Kystdesign AS
+    ('818132182', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; akvarobotikk'),          -- Aqua Robotics AS
+    ('929455568', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase (som Halodi Robotics, nå 1X Technologies)'), -- 1X Technologies AS
+    ('916540892', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; droner'),                -- Griff Aviation AS
+    ('915912850', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; projektorer'),           -- Norxe AS
+    ('977249368', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; marine ingredienser'),   -- Seagarden AS
+    ('983356494', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; kveiteoppdrett'),        -- Sterling White Halibut AS
+    ('983821030', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; CNC-maskinering'),       -- Stamas Solutions AS
+    ('980429245', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com'),                        -- Pretec AS
+    ('921770359', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; pumper'),                -- Ydra AS
+    ('814056872', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; løfteutstyr'),           -- Kolos Lifting & Inspection AS
+    ('937820747', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com'),                        -- Velde Industri AS
+    ('967794104', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; metallbearbeiding'),     -- KSMV AS
+    ('884048842', 'RamBase Cloud ERP', 'Full ERP', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; spedisjon'),             -- Logi Trans AS
+    -- RamBase QMS (kun kvalitetsstyring — annet ERP i bunn)
+    ('914778271', 'RamBase QMS', 'Kun QMS', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; kvalitetsstyring'),             -- Norsk Hydro ASA
+    ('980518647', 'RamBase QMS', 'Kun QMS', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; kvalitetsstyring'),             -- Eramet Norway AS
+    ('975934578', 'RamBase QMS', 'Kun QMS', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; kvalitetsstyring'),             -- Speira AS
+    ('925323276', 'RamBase QMS', 'Kun QMS', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; kvalitetsstyring'),             -- Blu Electro AS
+    ('816850002', 'RamBase QMS', 'Kun QMS', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; kvalitetsstyring'),             -- Blu Offshore AS
+    ('988117382', 'RamBase QMS', 'Kun QMS', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; kvalitetsstyring'),             -- Norwegian Offshore Rental AS
+    ('988976849', 'RamBase QMS', 'Kun QMS', 'Bekreftet (kundecase)', 'Offentlig kundecase; tre ISO-sertifiseringer med RamBase'),         -- Lie Blikk AS
+    ('915710468', 'RamBase QMS', 'Kun QMS', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; kvalitetsstyring')              -- Sandvold & Velde Supply AS
+ON CONFLICT (organisasjonsnummer, erp_system) DO NOTHING;
