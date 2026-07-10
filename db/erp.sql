@@ -157,3 +157,27 @@ INSERT INTO brreg.selskap_erp (organisasjonsnummer, erp_system, erp_scope, statu
     ('988976849', 'RamBase QMS', 'Kun QMS', 'Bekreftet (kundecase)', 'Offentlig kundecase; tre ISO-sertifiseringer med RamBase'),         -- Lie Blikk AS
     ('915710468', 'RamBase QMS', 'Kun QMS', 'Bekreftet (kundecase)', 'Offentlig kundecase på rambase.com; kvalitetsstyring')              -- Sandvold & Velde Supply AS
 ON CONFLICT (organisasjonsnummer, erp_system) DO NOTHING;
+
+-- Tripletex-kunder fra offentlige kundehistorier (tripletex.no/fagblogg/kundehistorier).
+-- Tripletex er regnskaps-/økonomisystem (ikke full ERP) — scope merket deretter.
+-- Org.nr verifisert mot brreg-API-et. Kun entydig identifiserte selskaper er tatt
+-- med; Devspace, Advantek Norge, Collett Flattum, Dronningfjell og Byggmester
+-- Jakob lot seg ikke koble sikkert og er utelatt.
+INSERT INTO brreg.selskap_erp (organisasjonsnummer, erp_system, erp_scope, status, notat) VALUES
+    ('931638920', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; bygg'),          -- Lødøen Bygg AS
+    ('916833393', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; renhold/facility'), -- Totality Facility Services AS
+    ('981408438', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; varehandel/lager'), -- Instant Norge AS
+    ('928653137', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; restaurant (Henningsvær)'), -- Klatrekafeen AS
+    ('925622516', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; jernbaneentreprenør'), -- Site Service Bane AS
+    ('916081324', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; restaurant'),      -- Tyrkisk Kjøkken AS
+    ('922655103', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; kafé/servering (Oslo)'), -- Talormade AS
+    ('921707959', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; elektroentreprenør'), -- Øst Elektro AS
+    ('917653135', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; vertikalt landbruk (Onna)'), -- Onna Greens AS
+    ('919997400', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; solenergi'),       -- Solcellekraft AS
+    ('918547258', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; edtech'),          -- Learnlab AS
+    ('927210142', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; eiendomsutvikling/loft'), -- Ymro AS
+    ('923149430', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; helseteknologi (migrene)'), -- Nordic Brain Tech AS
+    ('933086550', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; vindusutskifting'), -- Vindux AS
+    ('995398214', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; skjønnhet/retail'), -- Lyko AS
+    ('983545300', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; bilberging')       -- Redningsverket AS
+ON CONFLICT (organisasjonsnummer, erp_system) DO NOTHING;
