@@ -181,3 +181,13 @@ INSERT INTO brreg.selskap_erp (organisasjonsnummer, erp_system, erp_scope, statu
     ('995398214', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; skjønnhet/retail'), -- Lyko AS
     ('983545300', 'Tripletex', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på tripletex.no; bilberging')       -- Redningsverket AS
 ON CONFLICT (organisasjonsnummer, erp_system) DO NOTHING;
+
+-- PowerOffice Go-kunder fra offentlige kundehistorier/artikler (poweroffice.no).
+-- PowerOffice Go er regnskaps-/økonomisystem (ikke full ERP). Org.nr verifisert
+-- mot brreg-API-et. PowerOffice har ingen samlet kundecase-oversikt; disse er de
+-- navngitte end-kundene funnet i deres artikler/omtaler.
+INSERT INTO brreg.selskap_erp (organisasjonsnummer, erp_system, erp_scope, status, notat) VALUES
+    ('997071387', 'PowerOffice Go', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på poweroffice.no; bilverksted (Narvik)'), -- Holmen Bilservice AS
+    ('919807784', 'PowerOffice Go', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på poweroffice.no; byggentreprenør (Narvik)'), -- Narvik Bygg AS
+    ('911715732', 'PowerOffice Go', 'Regnskap/økonomi', 'Bekreftet (kundecase)', 'Offentlig kundehistorie på poweroffice.no; maskinentreprenør/stein') -- Røyseth Maskin AS
+ON CONFLICT (organisasjonsnummer, erp_system) DO NOTHING;
