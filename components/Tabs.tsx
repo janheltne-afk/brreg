@@ -7,7 +7,7 @@ import { tabs } from "@/lib/tabs";
 export function Tabs() {
   const pathname = usePathname();
   return (
-    <nav className="flex flex-wrap gap-1.5">
+    <nav className="app-tabs">
       {tabs.map((t) => {
         const href = `/${t.slug}`;
         const active = pathname === href || (pathname === "/" && t.slug === "selskaper");

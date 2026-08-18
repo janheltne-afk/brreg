@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  outputFileTracingRoot: process.cwd(),
   // postgres.js is a server-only dependency; keep it out of the client bundle.
   serverExternalPackages: ["postgres"],
 };
